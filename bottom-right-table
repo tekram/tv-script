@@ -1,0 +1,39 @@
+// Intraday Cloud
+
+// Define the 10-minute timeframe
+timeframe = '10'
+
+// Input lengths for the EMAs
+ema5_length = input.int(5, title = 'Length for 5 EMA')
+ema12_length = input.int(12, title = 'Length for 12 EMA')
+ema34_length = input.int(34, title = 'Length for 34 EMA')
+ema50_length = input.int(50, title = 'Length for 50 EMA')
+
+// Calculate the EMAs on a 10-minute timeframe
+[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+
+// Conditions to check if one EMA is above another
+is_ema5_above_ema12 = ema5 > ema12
+is_ema34_above_ema50 = ema34 > ema50
+
+short_cloud = is_ema5_above_ema12 ? 'Bullish' : 'Bearish'
+long_cloud = is_ema34_above_ema50 ? 'Bullish' : 'Bearish'
+
+short_cloud_color = is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
+long_cloud_color = is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
+
+
+// Intraday VIX
+
+// Calculate the EMAs on a 10-minute timeframe
+[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+
+// Conditions to check if one EMA is above another
+vix_is_ema5_above_ema12 = vix_ema5 > vix_ema12
+vix_is_ema34_above_ema50 = vix_ema34 > vix_ema50
+
+vix_short_cloud = vix_is_ema5_above_ema12 ? 'Bullish' : 'Bearish'
+vix_long_cloud = vix_is_ema34_above_ema50 ? 'Bullish' : 'Bearish'
+
+vix_short_cloud_color = vix_is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
+vix_long_cloud_color = vix_is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
