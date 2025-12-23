@@ -1,0 +1,40 @@
+# GitHub Pages Configuration
+theme: jekyll-theme-minimal
+title: "TV Script - Trading Dashboard Documentation"
+description: "Comprehensive documentation for TradingView Pine Script indicators and trading strategies"
+baseurl: "/tv-script"
+url: "https://tekram.github.io/tv-script"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Navigation
+nav:
+  - Home: "index.md"
+  - README: "README.md"
+  - Trading Instructions: "TRADING_INSTRUCTIONS.md"
+  - Bottom Right Table: "bottom-right-table-README.md"
+
+# Collections for better organization
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:name/
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - "*.pine"
+  - "main"
+  - "top-right-table"
+  - "bottom-right-table"
