@@ -1,0 +1,1307 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+// Credit to  MikeC for the first version. Fred6724 for his contribution to this updated version
+// TheScrutiniser and GlinckEastwoot for ADR% formula
+// latest update with clean chart
+
+// VERSION 2.0 - Optimized for TradingView 40-call limit
+// - Reduced request calls from 47 to 24
+// - Consolidated multiple request.security calls into single array-based calls
+// - Removed Bollinger Band calculations to reduce request count
+// - Fixed variable reference errors
+// - Maintains all core functionality within plan limits
+
+
+//@version=6
+indicator(title = 'Swing Dashboard', shorttitle = 'Swing Data', overlay = true)
+
+cleanup = input(true, title = 'Remove Extra Stuff')
+remove_floats = input(false, title='Remove Right Sided Floating Prices')
+hide_clouds = input(false, title="Hide Cloud Fill")
+float_offset = input(15, title='Right sided floats offset in number of bars')
+show_longer_ma = input(false, title = 'Show Longer MAs')
+show_mktCap = input(false, title = 'Show Market Cap')
+show_floatpercent = input(false, title = 'Show Float%')
+show_adrp = input(true, title = 'Show ADR%')
+show_atr = input(false, title = 'Show ATR')
+show_lod_dist = input(true, title = 'Show LoD dist.')
+show_ADVS = input(false, title = 'Show Avg Daily $ Volume')
+show_ADV = input(true, title = 'Show Avg Daily Volume')
+show_projectedVol = input(true, title = 'Show Projected Volumes')
+show_relVol = input(true, title = 'Show Relative Volume')
+show_volBuzz = input(false, title = 'Show Vol. Buzz')
+show_sector = input(true, title = 'Show Sector')
+show_ind = input(true, title = 'Show Ind. Grp')
+show_extended = input(false, title = 'Show Extended')
+show_launch_pad = input(false, title = 'Show Launch Pad')
+show_market_breadth = input(false, title = 'Show Market Breadth')
+show_clouds = input(true, title = 'Show Clouds')
+show_trend_cloud_labels = input.bool(true, title = 'Show Trend Labels')
+show_three_ema = input(false, title = 'Show 3 EMA + RSI / 4 EMA')
+show_30_min = input(true, title = 'Show 30 Min')
+show_fundamentals = input(false, title = 'Show Fundamentals')
+adrp_len = input(20, title = 'ADR% Length', tooltip = 'The number of daily bars used in the calculation of the ADR%')
+atr_len = input(14, title = 'ATR Length', tooltip = 'The number of daily bars used in the calculation of the ATR')
+len = input(50, 'Volume MA Length', tooltip = 'The number of daily bars back for the MA calculation of the volume')
+extended_ema_input = input(20, 'EMA', tooltip = 'Which EMA do you want to see extension from')
+extended_sma_input = input(50, 'SMA', tooltip = 'Which SMA do you want to see extension from')
+tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large])
+bg_col = input(#00000000, title = 'Background Color')
+txt_col = input(color.rgb(0, 0, 0), title = 'Text Color')
+show_empty_row = input(true, title = 'Add an empty row above the displayed values', tooltip = 'Serves the purpose of not having the pane icons overlap with the ' + 'text in the table if multiple panes are shown and the chart pane is hovered')
+show_rsrating = input(true, title = 'Hide RS Rating')
+show_4_ema = input(false, title = 'Show 4 EMA on Chart (red line)')
+show_bb_dots = input(false, title = 'Show 30m and 1hr BB dots')
+
+
+arp = 100 * (ta.sma(high / low, adrp_len) - 1)
+[adrp, atr, lod_dist] = request.security(syminfo.tickerid, 'D', [arp, ta.atr(atr_len), 100 * (close - low) / ta.atr(atr_len)])
+
+var float dailyHigh = na
+var float dailyLow = na
+
+dailyHigh := math.max(dailyHigh, high)
+dailyLow := math.min(dailyLow, low)
+
+dailyRange = high - low
+
+percentDailyRange = dailyRange / low * 100
+
+// Volume calculation
+
+tf = timeframe.period
+s = syminfo.tickerid
+[vol, avgDaVol, closeDay] = request.security(s, tf, [volume, ta.sma(volume, len), close])
+ma = ta.sma(vol, len)
+// 1) Relative Volume
+relVol = vol / ma * 100
+avgDaVolCalc = avgDaVol
+uV = ''
+if avgDaVol >= 1000 and avgDaVol < 1000000
+    avgDaVol := avgDaVol / 1000
+    uV := 'K'
+    uV
+if avgDaVol >= 1000000 and avgDaVol < 1000000000
+    avgDaVol := avgDaVol / 1000000
+    uV := 'M'
+    uV
+if avgDaVol >= 1000000000
+    avgDaVol := avgDaVol / 1000000000
+    uV := 'B'
+    uV
+    // 3) Average Daily $ Vol
+    // closeDay already defined in consolidated request above
+advdolDa = closeDay * avgDaVolCalc
+uVDoll = ''
+if advdolDa >= 1000 and advdolDa < 1000000
+    advdolDa := advdolDa / 1000
+    uVDoll := 'K'
+    uVDoll
+if advdolDa >= 1000000 and advdolDa < 1000000000
+    advdolDa := advdolDa / 1000000
+    uVDoll := 'M'
+    uVDoll
+if advdolDa >= 1000000000
+    advdolDa := advdolDa / 1000000000
+    uVDoll := 'B'
+    uVDoll
+    // 4)  Market Cap
+TSO = request.financial(s, 'TOTAL_SHARES_OUTSTANDING', 'FQ', ignore_invalid_symbol = true)
+MCap = TSO * closeDay
+MCapCalc = MCap
+uM = ''
+if MCap >= 1000 and MCap < 1000000
+    MCap := MCap / 1000
+    uM := 'K'
+    uM
+if MCap >= 1000000 and MCap < 1000000000
+    MCap := MCap / 1000000
+    uM := 'M'
+    uM
+if MCap >= 1000000000
+    MCap := MCap / 1000000000
+    uM := 'B'
+    uM
+    // 5) Float%
+FSO = request.financial(s, 'FLOAT_SHARES_OUTSTANDING', 'FY', ignore_invalid_symbol = true)
+FFMCap = FSO * closeDay
+floatPer = FFMCap / MCapCalc * 100
+// 6) Projected Volume
+// Code implented from    https://www.tradingview.com/script/tFe9aLsd-Projected-Volume/  credits to Bob-Lablaw
+// Calculation of projected volume
+time_period = (time_close - time) / 1000
+time_passed = (timenow - time) / 1000
+time_left = (time_close - timenow) / 1000
+
+volume_per_second = 0.0
+volume_projected = float(volume)
+uP = ''
+if time_left > 0
+    volume_per_second := volume / time_passed
+    volume_projected := volume + volume_per_second * time_left
+    volume_projected
+if volume_projected >= 1000 and volume_projected < 1000000
+    volume_projected := volume_projected / 1000
+    uP := 'K'
+    uP
+if volume_projected >= 1000000 and volume_projected < 1000000000
+    volume_projected := volume_projected / 1000000
+    uP := 'M'
+    uP
+if volume_projected >= 1000000000
+    volume_projected := volume_projected / 1000000000
+    uP := 'B'
+    uP
+    // 7) Volume Buzz by monkaOMEGA ->  https://www.tradingview.com/script/vAxiK8VI-Volume-Buzz-2-0/
+volBuzz = 100 * (volume / ta.sma(volume, len) - 1)
+// 8) Sector
+string sector = syminfo.sector
+if na(sector)
+    sector := 'N/A'
+    sector
+    // 9) Inudstry group
+string industryGrp = syminfo.industry
+if na(industryGrp)
+    industryGrp := 'N/A'
+    industryGrp
+
+
+//period = request.periods.QUARTERLY  // Change to request.periods.ANNUAL for annual data or request.periods.TTM for trailing twelve months
+
+EPS = request.financial(syminfo.tickerid, 'EARNINGS_PER_SHARE', 'TTM')
+PriceEarningsRatio = 0.0
+if na(EPS)
+    EPS := 0
+    EPS
+else
+    PriceEarningsRatio := close / EPS
+    PriceEarningsRatio
+EBITDA = request.financial(syminfo.tickerid, 'EBITDA', 'TTM')
+
+market_cap = request.financial(syminfo.tickerid, 'MARKET_CAP', 'FQ')
+
+// multiple = market_cap / EBITDA
+
+// "TTM", "FY", "FQ", "FH", "D".
+
+// Intraday Cloud
+
+// Define the 10-minute timeframe
+timeframe = '10'
+
+// Input lengths for the EMAs
+ema5_length = input.int(5, title = 'Length for 5 EMA')
+ema12_length = input.int(12, title = 'Length for 12 EMA')
+ema34_length = input.int(34, title = 'Length for 34 EMA')
+ema50_length = input.int(50, title = 'Length for 50 EMA')
+
+// Calculate the EMAs on a 10-minute timeframe
+[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+
+// Conditions to check if one EMA is above another
+is_ema5_above_ema12 = ema5 > ema12
+is_ema34_above_ema50 = ema34 > ema50
+
+short_cloud = is_ema5_above_ema12 ? 'Bullish' : 'Bearish'
+long_cloud = is_ema34_above_ema50 ? 'Bullish' : 'Bearish'
+
+short_cloud_color = is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
+long_cloud_color = is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
+
+
+// Intraday VIX
+
+// Calculate the EMAs on a 10-minute timeframe
+[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+
+// Conditions to check if one EMA is above another
+vix_is_ema5_above_ema12 = vix_ema5 > vix_ema12
+vix_is_ema34_above_ema50 = vix_ema34 > vix_ema50
+
+vix_short_cloud = vix_is_ema5_above_ema12 ? 'Bullish' : 'Bearish'
+vix_long_cloud = vix_is_ema34_above_ema50 ? 'Bullish' : 'Bearish'
+
+vix_short_cloud_color = vix_is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
+vix_long_cloud_color = vix_is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
+
+// Plot labels or signals on the chart
+//if is_ema5_above_ema12
+//    label.new(bar_index, high, text="5 EMA > 12 EMA", color=color.green, textcolor=color.white, style=label.style_label_down, size=size.small)
+
+//if is_ema34_above_ema50
+//    label.new(bar_index, low, text="34 EMA > 50 EMA", color=color.blue, textcolor=color.white, style=label.style_label_up, size=size.small)
+
+table c = table.new(position.bottom_right, 4, 6, bgcolor = bg_col)
+table.cell(c, 0, 4, '', text_color = color.white, bgcolor = #ffffff00)
+table.cell(c, 0, 5, '', text_color = color.white, bgcolor = #ffffff00)
+
+if show_trend_cloud_labels //and is_ema5_above_ema12
+    table.cell(c, 0, 0, '5-12 Cloud', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+    table.cell(c, 1, 0, '34-50 Cloud', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+    table.cell(c, 0, 1, short_cloud, text_color = color.white, bgcolor = short_cloud_color, text_size = tbl_size)
+    table.cell(c, 1, 1, long_cloud, text_color = color.white, bgcolor = long_cloud_color, text_size = tbl_size)
+
+    if show_trend_cloud_labels
+        table.cell(c, 2, 0, 'VIX 5-12 Cloud', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+        table.cell(c, 3, 0, 'VIX 34-50 Cloud', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+        table.cell(c, 2, 1, vix_short_cloud, text_color = color.white, bgcolor = vix_short_cloud_color, text_size = tbl_size)
+        table.cell(c, 3, 1, vix_long_cloud, text_color = color.white, bgcolor = vix_long_cloud_color, text_size = tbl_size)
+
+// Extended
+
+price_sma = ta.sma(close, 50)
+price_ema = ta.ema(close, 20)
+price_20_ema_hourly = request.security(syminfo.tickerid, "60", ta.ema(close, 20))
+price_10_ema = ta.ema(close, 10)
+price_5_ema = ta.ema(close, 5)
+price_3_ema = ta.ema(close, 3)
+
+price_4_ema = ta.ema(high, 4)
+
+// Define the RSI length
+rsiLength = input(14, title = 'RSI Length')
+
+// Calculate the RSI
+rsiValue = ta.rsi(close, rsiLength)
+
+change_from_sma = close - price_sma
+change_from_ema = close - price_ema
+change_from_10_ema = close - price_10_ema
+change_from_5_ema = close - price_5_ema
+
+percent_change_from_sma = (close - price_sma) / price_sma * 100
+percent_change_from_ema = (close - price_ema) / price_ema * 100
+percent_change_from_20_ema_hourly = (close - price_20_ema_hourly) / price_20_ema_hourly * 100
+percent_change_from_10_ema = (close - price_10_ema) / price_10_ema * 100
+percent_change_from_5_ema = (close - price_5_ema) / price_5_ema * 100
+percent_change_from_3_ema = (close - price_3_ema) / price_3_ema * 100
+percent_change_from_4_ema = (close - price_4_ema) / price_4_ema * 100
+
+extended_sma = change_from_sma / atr
+extended_ema = change_from_ema / atr
+extended_10_ema = change_from_10_ema / atr
+extended_5_ema = change_from_5_ema / atr
+
+// Launch Pad per Ray from Trader Lion
+
+five_dema = ta.ema(close, 5)
+ten_dema = ta.ema(close, 10)
+twenty_dema = ta.ema(close, 20)
+fifty_dsma = ta.sma(close, 50)
+two_hundered_dsma = ta.sma(close, 200)
+
+five_diff = (close - five_dema) / close
+ten_diff = (close - ten_dema) / close
+twenty_diff = (close - twenty_dema) / close
+fifty_diff = (close - fifty_dsma) / close
+two_hundered_diff = (close - two_hundered_dsma) / close
+
+percent_change_from_200_sma = (close - two_hundered_dsma) / two_hundered_dsma * 100
+
+swing_launch_pad = math.abs(five_diff) < 0.035 and math.abs(ten_diff) < 0.035 and math.abs(twenty_diff) < 0.035
+
+pos_launch_pad = math.abs(fifty_diff) < 0.03 and math.abs(ten_diff) < 0.03 and math.abs(twenty_diff) < 0.03
+
+[yesterdayHigh, yesterdayLow] = request.security(syminfo.tickerid, 'D', [high[1], low[1]])
+
+[prior_30m_high, twoPriorthirtyMinHigh, twoPriorthirtyMinLow, prevThirtyMinHigh, prevThirtyMinLow] = request.security(syminfo.tickerid, '30', [high[1], high[2], low[2], high[1], low[1]])
+prior_30m_high_diff = (close - prior_30m_high) / close * 100
+
+isInsideThirtyMinCandle = twoPriorthirtyMinHigh >= prevThirtyMinHigh and twoPriorthirtyMinLow <= prevThirtyMinLow ? 'Inside Candle' : ''
+
+[prior_week_high, prior_week_low, twoPriorWeekHigh, twoPriorWeekLow] = request.security(syminfo.tickerid, 'W', [high[1], low[1], high[2], low[2]], lookahead=barmerge.lookahead_on)
+
+// Check if the prior week was an inside week
+isInsideWeekCandle = (prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow)
+
+// Input for RSI length
+rsi_length = input.int(14, title = 'RSI Length')
+
+// Fetch 30-minute close prices
+close_30min = 1 //request.security(syminfo.tickerid, "30", close)
+
+// Calculate RSI on 30-minute data
+rsi_30min = ta.rsi(close_30min, rsi_length)
+
+// Calculate VWAP
+vwap = ta.vwap(hlc3)
+
+symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = 'Symbol to Pull')
+percent_above_vwap = request.security(symbolToPull, '1', close)
+symbolToPull1 = input.symbol('TICK', title = 'Symbol to Pull')
+tick = request.security(symbolToPull1, '1', close)
+symbolToPull2 = input.symbol('S5TW', title = 'Symbol to Pull $ above 20 SMA')
+percent_above_20 = request.security(symbolToPull2, '1D', close)
+
+//5 DAY Breadth
+//S5FD
+//NDFD
+//20 Day Breadth
+//S5TW
+//NDTW
+
+symbolToPull3 = input.symbol('NDFD', title = 'Symbol to Pull % above 5 SMA')
+percent_above_5 = request.security(symbolToPull3, '1D', close)
+
+symbolToPull4 = input.symbol('S5TH', title = 'Symbol to Pull % above 200 SMA')
+percent_above_200 = request.security(symbolToPull4, '1D', close)
+
+table d = table.new(position.bottom_left, 2, 2, bgcolor = bg_col)
+
+[spy_daily, spy_current_close, spy_current_ema, spy_current_low, spy_daily_low, spy_daily_ema] = request.security('SPY', 'D', [close, close, ta.ema(close, 20), low, low, ta.ema(close, 20)], lookahead = barmerge.lookahead_on)
+ma50 = ta.sma(spy_daily, 50)
+ma20 = ta.ema(spy_daily, 20)
+
+// Define conditions
+below_50 = spy_daily < ma50
+above_50 = spy_daily > ma50
+above_50_and_20 = spy_daily > ma50 and spy_daily > ma20
+above_20 = spy_daily > ma20
+
+// Fetch SPY data - use consolidated data
+spyClose = spy_current_close
+spyEMA20 = spy_current_ema
+SpyLow = spy_current_low
+
+// Initialize counter for days above 20 EMA
+var int daysAboveEMA = 0
+
+// Check if current SPY close is above EMA
+if spyClose > spyEMA20
+    daysAboveEMA := daysAboveEMA + 1
+    daysAboveEMA
+else
+    daysAboveEMA := 0
+    daysAboveEMA
+
+
+// Request yesterday's SPY low and 20 EMA - use consolidated data
+SpyLowTest = spy_daily_low
+spyEMA20TEST = spy_daily_ema
+
+// Condition: Low < EMA
+low_below_ema = SpyLowTest < spyEMA20TEST
+
+// Track days since the last occurrence
+var int days_since = na
+
+if bar_index > 0
+    if low_below_ema
+        days_since := 0 // Reset count when condition is met
+        days_since
+    else if not na(days_since)
+        days_since := days_since + 1 // Increment if condition is not met
+        days_since
+
+// Display last recorded number on chart
+//label.new(bar_index, high, str.tostring(days_since), color=color.white, textcolor=color.black, size=size.small)
+
+
+// Display counter
+if syminfo.ticker == 'SPY'
+    label.new(bar_index, high, text = str.tostring(daysAboveEMA), color = color.new(color.black, 100), textcolor = color.black)
+
+// Create the table
+
+// Set the table content based on the conditions
+
+if show_clouds
+    twenty_go_no_go = 'Neutral'
+    five_go_no_go = 'Neutral'
+
+    if percent_above_20 > 75
+        twenty_go_no_go := 'Warning'
+        twenty_go_no_go
+    else if percent_above_20 < 30
+        twenty_go_no_go := 'GO (< 30)'
+        twenty_go_no_go
+    else
+        twenty_go_no_go := 'Neutral'
+        twenty_go_no_go
+
+    if percent_above_5 > 75
+        five_go_no_go := 'Warning'
+        five_go_no_go
+    else if percent_above_5 < 20
+        five_go_no_go := 'GO (< 20)'
+        five_go_no_go
+    else
+        five_go_no_go := 'Neutral'
+        five_go_no_go
+
+    twenty_go_no_go := twenty_go_no_go + ' (' + str.tostring(percent_above_20) + ')'
+    five_go_no_go := five_go_no_go + ' (' + str.tostring(percent_above_5) + ')'
+
+    table.cell(c, 0, 2, '5% Breadth', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+    table.cell(c, 1, 2, '20% Breadth', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+    table.cell(c, 0, 3, five_go_no_go, text_color = color.white, bgcolor = #311b92cd, text_size = tbl_size)
+    table.cell(c, 1, 3, twenty_go_no_go, text_color = color.white, bgcolor = #311b92cd, text_size = tbl_size)
+    table.cell(c, 2, 2, 'Trade Condition', text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+    table.cell(c, 3, 2, 'Days SPY > 20 EMA : ' + str.tostring(daysAboveEMA) + ' ' + str.tostring(days_since), text_color = color.white, bgcolor = color.black, text_size = tbl_size)
+
+    if above_20 and below_50
+        table.cell(c, 2, 3, text = 'Above 20 Below 50 Day', text_color = #880b0bf5, bgcolor = color.new(color.white, 90))
+        table.cell(c, 3, 3, text = 'Short Swings (1-2 days)', text_color = color.black, bgcolor = color.new(color.white, 90))
+    else if below_50
+        table.cell(c, 2, 3, text = 'Market Below 50 Day', text_color = color.red, bgcolor = color.new(color.white, 90))
+        table.cell(c, 3, 3, text = 'Short Swings (1-2 days)', text_color = color.black, bgcolor = color.new(color.white, 90))
+    else if above_50_and_20
+        table.cell(c, 2, 3, text = 'Market Above 20 & 50 Day', text_color = #1b5f15, bgcolor = color.new(color.white, 90))
+        table.cell(c, 3, 3, text = 'Swings -> Position Trades', text_color = #1b5f15, bgcolor = color.new(color.white, 90))
+    else if above_50
+        table.cell(c, 2, 3, text = 'Market Above 50 Day', text_color = color.green, bgcolor = color.new(color.white, 90))
+        table.cell(c, 3, 3, text = 'Swing (5-8 days)', text_color = color.black, bgcolor = color.new(color.white, 90))
+
+// Display table when conditions are met
+//plotshape(series=below_50 or above_50 or above_50_and_21, location=location.top, color=color.transparent, style=shape.triangledown, title="Market Condition")
+
+
+//S5FD (growth SP 5 day) SFTW (20 day SPY) S5FI
+
+// Display Table
+tfDaily = timeframe.isdaily
+table t = table.new(position.top_right, 3, 24, bgcolor = bg_col)
+if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
+    if show_empty_row
+        table.cell(t, 1, 0, '')
+        table.cell(t, 2, 0, '')
+    if show_mktCap
+        table.cell(t, 1, 1, 'Market Cap', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 1, str.tostring(math.round(MCap, 2), '0.00') + uM, text_color = txt_col, text_size = tbl_size)
+    if show_floatpercent
+        table.cell(t, 1, 2, 'Float %', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 2, str.tostring(math.round(floatPer, 1), '0.0') + '%', text_color = txt_col, text_size = tbl_size)
+    if show_adrp
+        table.cell(t, 1, 3, 'ADR% / Today Range', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 3, str.tostring(math.round(adrp, 2)) + '% / ' + str.tostring(math.round(percentDailyRange, 2)) + '%', text_color = txt_col, text_size = tbl_size)
+    if show_atr
+        table.cell(t, 1, 4, 'ATR', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 4, str.tostring(math.round(atr, 2)), text_color = txt_col, text_size = tbl_size)
+    if show_lod_dist
+        table.cell(t, 1, 5, 'LoD dist. / (High/Low)', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 5, str.tostring(math.round(lod_dist)) + '% / ' + str.tostring(math.round(yesterdayHigh, 4)) + ' / ' + str.tostring(math.round(yesterdayLow, 4)), text_color = txt_col, text_size = tbl_size)
+    if show_ADVS
+        table.cell(t, 1, 6, tfDaily ? 'Avg Dly $ Vol' : 'Avg $ Vol', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 6, '$' + str.tostring(math.round(advdolDa, 2), '0.00') + uVDoll, text_color = txt_col, text_size = tbl_size)
+    if show_ADV
+        table.cell(t, 1, 7, tfDaily ? 'Avg Dly Vol' : 'Avg Vol', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 7, str.tostring(math.round(avgDaVol, 2), '0.00') + uV, text_color = txt_col, text_size = tbl_size)
+    if show_projectedVol and show_relVol
+        table.cell(t, 1, 8, 'Proj. Vol / Rel. Vol.', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 8, str.tostring(math.round(volume_projected, 2), '0.00') + uP + ' / ' + str.tostring(math.round(relVol)) + '%', text_color = txt_col, text_size = tbl_size)
+    if isInsideWeekCandle //or (show_30_min and isInsideThirtyMinCandle == 'Inside 30M Candle')
+        //prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow
+        if isInsideWeekCandle
+            insideWeekLabel = isInsideWeekCandle ? "Inside Week (" + str.tostring(prior_week_high) + " - " + str.tostring(prior_week_low) + ")": ""
+            bgcolor30m = prior_30m_high_diff > 0 ? #17880b51 : #880b0b50
+            table.cell(t, 1, 9, 'Inside Week', text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
+            table.cell(t, 2, 9, insideWeekLabel + ' ' + str.tostring(isInsideThirtyMinCandle), text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
+        else
+            bgcolor30m = prior_30m_high_diff > 0 ? #17880b51 : #880b0b50
+            table.cell(t, 1, 9, '30 Min / Pior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
+            table.cell(t, 2, 9, str.tostring(isInsideThirtyMinCandle) + ' ' + str.tostring(math.round(prior_30m_high, 4)) + ' (' + str.tostring(math.round(prior_30m_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_30min, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
+    if show_volBuzz
+        table.cell(t, 1, 10, 'Vol. Buzz', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 10, str.tostring(math.round(volBuzz)) + '%', text_color = txt_col, text_size = tbl_size)
+    if show_extended
+        bgcolor5 = percent_change_from_5_ema > 0 ? #17880b51 : #880b0b50
+        bgcolor10 = percent_change_from_10_ema > 0 ? #17880b51 : #880b0b50
+        bgcolor20 = percent_change_from_ema > 0 ? #17880b51 : #880b0b50
+        bgcolorinput_sma = percent_change_from_sma > 0 ? #17880b51 : #880b0b50
+        bgcolorvwap = vwap > close ? #17880b51 : #880b0b50
+        bgcolor200 = percent_change_from_200_sma > 0 ? #17880b51 : #880b0b50
+
+        table.cell(t, 1, 12, str.tostring('Extended EMA 5'), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor5)
+        table.cell(t, 2, 12, str.tostring(math.round(extended_5_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor5)
+        if show_longer_ma or percent_change_from_sma < 0.1
+            table.cell(t, 1, 15, 'Extended SMA ' + str.tostring(extended_sma_input), text_color = #1114a1, text_size = tbl_size, bgcolor = bgcolorinput_sma)
+            table.cell(t, 2, 15, str.tostring(math.round(extended_sma, 2)) + ' / ' + str.tostring(math.round(percent_change_from_sma, 2)) + '% (' + str.tostring(math.round(price_sma, 2)) + ')', text_color = #1114a1, text_size = tbl_size, bgcolor = bgcolorinput_sma)
+        table.cell(t, 1, 14, 'Extended EMA ' + str.tostring(extended_ema_input), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor20)
+        table.cell(t, 2, 14, str.tostring(math.round(extended_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor20)
+        table.cell(t, 1, 13, 'Extended EMA 10', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor10)
+        table.cell(t, 2, 13, str.tostring(math.round(extended_10_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor10)
+        if show_longer_ma or percent_change_from_200_sma < 0.1
+            table.cell(t, 1, 16, str.tostring('200 SMA'), text_color = #c40f0f, text_size = tbl_size, bgcolor = bgcolor200)
+            table.cell(t, 2, 16, str.tostring(math.round(two_hundered_diff, 2)) + ' / ' + str.tostring(math.round(percent_change_from_200_sma, 2)) + '% (' + str.tostring(math.round(two_hundered_dsma, 2)) + ')', text_color = #c40f0f, text_size = tbl_size, bgcolor = bgcolor200)
+    if show_launch_pad and (pos_launch_pad or swing_launch_pad)
+        if swing_launch_pad
+            table.cell(t, 1, 19, str.tostring('Swing Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+            table.cell(t, 2, 19, str.tostring(swing_launch_pad), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+        if pos_launch_pad
+            table.cell(t, 1, 20, str.tostring('Position Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+            table.cell(t, 2, 20, str.tostring(pos_launch_pad), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+    if show_market_breadth
+        bgcolorabovevwap = percent_above_vwap > 50 ? #17880b51 : #880b0b50
+        bgcolortick = tick < -900 ? #17880b51 : #fcfbfb50
+        bgcolorabove20 = percent_above_20 < 10 and percent_above_20 < 80 ? color.green : color.navy
+        table.cell(t, 1, 17, str.tostring('% Above VWAP (20%-70%)/ TICK (-1K - 1K)'), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortick)
+        table.cell(t, 2, 17, str.tostring(math.round(percent_above_vwap, 2)) + ' / ' + str.tostring(math.round(tick, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortick)
+        table.cell(t, 1, 18, str.tostring('% Above 5/20 Day'), text_color = color.white, text_size = tbl_size, bgcolor = bgcolorabove20)
+        table.cell(t, 2, 18, str.tostring(math.round(percent_above_5, 2)) + ' / ' + str.tostring(math.round(percent_above_20, 2)), text_color = color.white, text_size = tbl_size, bgcolor = bgcolorabove20)
+    if show_sector
+        table.cell(t, 1, 22, 'Sector', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 22, sector, text_color = txt_col, text_size = tbl_size)
+    if show_ind
+        table.cell(t, 1, 21, 'Ind. Grp', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 21, industryGrp, text_color = txt_col, text_size = tbl_size)
+    if show_three_ema
+        if rsiValue < 31
+            bgcolor3 = percent_change_from_3_ema > 0 ? #17880b51 : #880b0b50
+            table.cell(t, 1, 11, 'Extended 3 EMA / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor3)
+            table.cell(t, 2, 11, str.tostring(math.round(price_3_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_3_ema, 2)) + '% / ' + str.tostring(math.round(rsiValue, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor3)
+        else
+            bgcolor4 = price_4_ema < close ? #17880b51 : #880b0b50
+            table.cell(t, 1, 11, 'Pivot 4 EMA / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor4)
+            table.cell(t, 2, 11, str.tostring(math.round(price_4_ema, 2)) + ' (' + str.tostring(math.round(percent_change_from_4_ema, 2)) + '%) / ' + str.tostring(math.round(rsiValue, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor4)
+    if show_fundamentals
+        table.cell(t, 1, 23, 'Fundamentals (PE/EBIDTA)', text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 23, 'X', text_color = txt_col, text_size = tbl_size)
+        //table.merge_cells(t, 1, 18, 2, 18)
+        //table.merge_cells(t, 1, 19, 2, 19)
+
+
+
+
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © ripster47
+
+//@version=6
+//indicator("Ripster EMA Clouds + RSI", overlay=true)
+matype = input.string(title = 'MA Type', defval = 'EMA', options = ['EMA', 'SMA'])
+
+ma_len1 = input.int(title = 'Short EMA1 Length', defval = 8)
+ma_len2 = input.int(title = 'Long EMA1 Length', defval = 9)
+ma_len3 = input.int(title = 'Short EMA2 Length', defval = 5)
+ma_len4 = input.int(title = 'Long EMA2 Length', defval = 13)
+ma_len5 = input.int(title = 'Short EMA3 Length', defval = 34)
+ma_len6 = input.int(title = 'Long EMA3 Length', defval = 50)
+ma_len7 = input.int(title = 'Short EMA4 Length', defval = 72)
+ma_len8 = input.int(title = 'Long EMA4 Length', defval = 89)
+ma_len9 = input.int(title = 'Short EMA5 Length', defval = 180)
+ma_len10 = input.int(title = 'Long EMA5 Length', defval = 200)
+
+src = input.source(title = 'Source', defval = hl2)
+ma_offset = input.int(title = 'Offset', defval = 0)
+
+f_ma(malen) =>
+    float result = na
+    if matype == 'EMA'
+        result := ta.ema(src, malen)
+        result
+    if matype == 'SMA'
+        result := ta.sma(src, malen)
+        result
+    result
+
+htf_ma1 = f_ma(ma_len1)
+htf_ma2 = f_ma(ma_len2)
+htf_ma3 = f_ma(ma_len3)
+htf_ma4 = f_ma(ma_len4)
+htf_ma5 = f_ma(ma_len5)
+htf_ma6 = f_ma(ma_len6)
+htf_ma7 = f_ma(ma_len7)
+htf_ma8 = f_ma(ma_len8)
+htf_ma9 = f_ma(ma_len9)
+htf_ma10 = f_ma(ma_len10)
+
+showlong = input.bool(false, title = 'Show Long Alerts')
+showshort = input.bool(false, title = 'Show Short Alerts')
+showLine = input.bool(false, title = 'Display EMA Line')
+ema1 = input.bool(true, title = 'Show EMA Cloud-1')
+ema2 = input.bool(true, title = 'Show EMA Cloud-2')
+ema3 = input.bool(false, title = 'Show EMA Cloud-3')
+ema4 = input.bool(true, title = 'Show EMA Cloud-4')
+ema5c = input.bool(true, title = 'Show EMA Cloud-5')
+
+emacloudleading = input.int(0, minval = 0, title = 'Leading Period For EMA Cloud')
+mashort1 = htf_ma1
+malong1 = htf_ma2
+mashort2 = htf_ma3
+malong2 = htf_ma4
+mashort3 = htf_ma5
+malong3 = htf_ma6
+mashort4 = htf_ma7
+malong4 = htf_ma8
+mashort5 = htf_ma9
+malong5 = htf_ma10
+
+cloudcolour1 = mashort1 >= malong1 ? #03610387 : #880e4f82
+cloudcolour2 = mashort2 >= malong2 ? color.rgb(50, 126, 53, 84) : color.rgb(244, 67, 54, 83)
+cloudcolour3 = mashort3 >= malong3 ? #2196f3 : #ffb74d
+cloudcolour4 = mashort4 >= malong4 ? #009688 : #f06292
+cloudcolour5 = mashort5 >= malong5 ? #05bed5 : #e65100
+
+mashortcolor1 = mashort1 >= mashort1[1] ? color.olive : color.maroon
+mashortcolor2 = mashort2 >= mashort2[1] ? color.green : color.maroon
+mashortcolor3 = mashort3 >= mashort3[1] ? color.olive : color.maroon
+mashortcolor4 = mashort4 >= mashort4[1] ? color.olive : color.maroon
+mashortcolor5 = mashort5 >= mashort5[1] ? color.olive : color.maroon
+
+mashortline1 = plot(ema1 ? mashort1 : na, color = showLine ? mashortcolor1 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA1')
+mashortline2 = plot(ema2 ? mashort2 : na, color = showLine ? mashortcolor2 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA2')
+mashortline3 = plot(ema3 ? mashort3 : na, color = showLine ? mashortcolor3 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA3')
+mashortline4 = plot(ema4 ? mashort4 : na, color = showLine ? mashortcolor4 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA4')
+mashortline5 = plot(ema5c ? mashort5 : na, color = showLine ? mashortcolor5 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA5')
+
+malongcolor1 = malong1 >= malong1[1] ? color.green : color.red
+malongcolor2 = malong2 >= malong2[1] ? color.rgb(76, 175, 79, 68) : color.red
+malongcolor3 = malong3 >= malong3[1] ? color.green : color.red
+malongcolor4 = malong4 >= malong4[1] ? color.green : color.red
+malongcolor5 = malong5 >= malong5[1] ? color.green : color.red
+
+malongline1 = plot(ema1 ? malong1 : na, color = showLine ? malongcolor1 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA1')
+malongline2 = plot(ema2 ? malong2 : na, color = showLine ? malongcolor2 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA2')
+malongline3 = plot(ema3 ? malong3 : na, color = showLine ? malongcolor3 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA3')
+malongline4 = plot(ema4 ? malong4 : na, color = showLine ? malongcolor4 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA4')
+malongline5 = plot(ema5c ? malong5 : na, color = showLine ? malongcolor5 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA5')
+
+var bool is_30min_60min = (timeframe.period == "30") or (timeframe.period == "60")
+
+// Adjust the color dynamically
+fill(mashortline2, malongline2, color = is_30min_60min or hide_clouds ? na : cloudcolour2, title = "MA Cloud2", display = display.all)
+
+fill(mashortline1, malongline1, color = cloudcolour1, title = 'MA Cloud1')
+fill(mashortline3, malongline3, color = cloudcolour3, title = 'MA Cloud3')
+fill(mashortline4, malongline4, color = cloudcolour4, title = 'MA Cloud4', display = display.none)
+fill(mashortline5, malongline5, color = cloudcolour5, title = 'MA Cloud5', display = display.none)
+
+// DAILY EMAS
+
+//plot(ta.ema(close, 13), title="13 EMA", color=#643263, linewidth=3, transp=0, display = display.none)
+plot(ta.ema(close, 5), title = '5 EMA', color = color.rgb(48, 104, 50), linewidth = 2)
+plot(ta.ema(close, 10), title = '10 EMA', color = color.rgb(255, 233, 39), linewidth = 2, force_overlay = true)
+plot(ta.ema(close, 20), title = '20 EMA', color = color.rgb(171, 60, 60), linewidth = 2)
+plot(ta.sma(close, 50), title = '50 SMA', color = not show_longer_ma ? na : color.rgb(8, 26, 104, 70), linewidth = 3)
+//plot(ta.ema(close, 30), title="30 EMA", color=#dd22d7, linewidth=3, transp=0, display = display.none)
+plot(ta.sma(close, 200), title = '200 SMA', color = not show_longer_ma ? na : #c40f0f67, linewidth = 3)
+//plot(ta.sma(close, 325), title="325 SMA", color=#c40fb8, linewidth=3, transp=75)
+
+ema_4 = ta.ema(high, 4)
+
+// Condition to check 30-min or 60-min timeframe
+is_valid_timeframe = timeframe.period == '30' or timeframe.period == '60'
+
+// Conditionally assign a value to the plot
+ema_4_to_plot = is_valid_timeframe or show_4_ema ? ema_4 : na
+
+// Plot the EMA conditionally
+//plot(ema_4_to_plot, title = '4 EMA', color = color.red, linewidth = 1)
+
+// Define length for standard deviation
+lengthSTD = 20  // Adjust as needed
+
+// Calculate standard deviation
+std_dev = ta.stdev(close, lengthSTD)
+
+ema_4_std_plot = is_valid_timeframe ? ema_4 - std_dev : na
+
+// Plot 1 standard deviation below the EMA
+//plot(ema_4_std_plot, title = 'EMA - 1 Std Dev', color = color.blue, linewidth = 1)
+// plot(ema_4_std_plot, title = 'EMA - 1 Std Dev', color = color.blue, linewidth = 1)
+
+// Input parameters for the Bollinger Bands
+length = input.int(20, title = 'Length', minval = 1)
+src_bb = input.source(close, title = 'Source') // Renamed input to src_bb
+mult = input.float(2.0, title = 'Multiplier', step = 0.1)
+
+// Calculate the Bollinger Bands
+basis = ta.sma(src_bb, length)
+dev = mult * ta.stdev(src_bb, length)
+upper_band = basis + dev
+lower_band = basis - dev
+
+// Add user inputs for colors with default values
+upper_band_color = input.color(#4caf4f00, title = 'Upper Band Color')
+lower_band_color = input.color(#4caf4f00, title = 'Lower Band Color')
+fill_color = input.color(color.new(#904caf, 92), title = 'Band Fill Color')
+
+// Use the user-configurable colors
+upper_band_plot = plot(upper_band, color = upper_band_color, title = 'Upper Band', linewidth = 2)
+lower_band_plot = plot(lower_band, color = lower_band_color, title = 'Lower Band', linewidth = 2)
+
+// Highlight the area between the upper and lower bands
+fill(upper_band_plot, lower_band_plot, color = is_valid_timeframe ? fill_color : na, title = 'Band Fill')
+
+// BLEOW THIS
+
+// Bollinger Band calculations removed to reduce request calls
+var float bb_lower_30m = na
+var float bb_lower_1h = na
+var float bb_lower_2h = na
+var float bb_lower_4h = na
+var float bb_lower_6h = na
+var float bb_upper_30m = na
+var float bb_upper_1h = na
+var float bb_upper_2h = na
+var float bb_upper_4h = na
+var float bb_upper_6h = na
+
+// Combine the values into a single string
+bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###') + '\n2H: ' + str.tostring(bb_lower_2h, '#.###') + ' / ' + str.tostring(bb_upper_2h, '#.###') + '\n4H: ' + str.tostring(bb_lower_4h, '#.###') + ' / ' + str.tostring(bb_upper_4h, '#.###') + '\n6H: ' + str.tostring(bb_lower_6h, '#.###') + ' / ' + str.tostring(bb_upper_6h, '#.###')
+
+// Create a single label to display the values
+var label bb_label = na
+if not na(bb_label)
+    label.delete(bb_label)
+if not remove_floats    
+    bb_label := label.new(bar_index + float_offset, low[1] - 2 * atr, bb_values_text, style = label.style_label_left, color = color.new(color.blue, 0), textcolor = color.white)
+
+// Additional Bollinger Band calculations removed to reduce request calls
+var float lower_band_30m = na
+var float lower_band_1h = na
+
+is_daily = timeframe.isdaily
+
+// Get the time of the current bar and the next bar
+current_time = time
+next_time = time[1]
+
+
+// Check if the current bar is the last bar of the day (time difference is in the same day)
+is_today = is_daily and dayofmonth(current_time) != dayofmonth(next_time) and show_bb_dots
+
+// Plot the values for the latest 30m and 1h lower Bollinger Bands on the current daily bar
+plot(is_today ? lower_band_30m : na, title = '30m Lower BB', color = #ac6cff, linewidth = 2, style = plot.style_circles)
+plot(is_today ? lower_band_1h : na, title = '1h Lower BB', color = color.rgb(82, 255, 183), linewidth = 2, style = plot.style_circles)
+
+// Plot the 1-hour lower Bollinger Band on the current chart with a navy dashed appearance
+// plot(bb_lower_1h, title="1H Lower BB", color=color.rgb(49, 27, 146, 52), linewidth=1)
+
+ema_values_text = '20 EMA (hourly): ' + str.tostring(math.round(percent_change_from_20_ema_hourly, 2)) + '% (' + str.tostring(math.round(price_20_ema_hourly, 2)) + ') / ' + str.tostring(math.round(extended_5_ema, 2))
+ema_values_text := ema_values_text + '\n5 EMA: ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ') / ' + str.tostring(math.round(extended_5_ema, 2))
+ema_values_text := ema_values_text + '\n10 EMA: ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ') / ' + str.tostring(math.round(extended_10_ema, 2))
+ema_values_text := ema_values_text + '\n20 EMA: ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ') / ' + str.tostring(math.round(extended_ema, 2))
+
+bgcolor20 = percent_change_from_ema > 0 ? color.rgb(14, 61, 9, 4) : color.rgb(104, 11, 11, 16)
+
+var label ema_label = na
+if not na(ema_label)
+    label.delete(ema_label)
+if not remove_floats
+    ema_label := label.new(bar_index + float_offset, low[1] + 2 * atr, ema_values_text, style = label.style_label_left, color = bgcolor20, textcolor = color.white)
+
+bgcolorlod = low[1] < close ? color.rgb(14, 61, 9, 4) : color.rgb(104, 11, 11, 16)
+
+var label low_of_day_label = na
+if not na(low_of_day_label)
+    label.delete(low_of_day_label)
+low_of_day_label := label.new(bar_index + 4, low[1], str.tostring(low[1]), style = label.style_label_left, color = bgcolorlod, textcolor = color.white)
+
+var line low_of_day_line = na // Declare as a line type
+if not na(low_of_day_line)
+    line.delete(low_of_day_line) // Delete the previous line if it exists
+low_of_day_line := line.new(x1 = bar_index - 1, y1 = low[1], x2 = bar_index + 4, y2 = low[1], color = bgcolorlod, width = 2, style = line.style_solid) // Create a new line
+
+var line bb_30m_line = na // Declare as a line type
+var line bb_30m_upper_line = na
+if not na(bb_30m_line)
+    line.delete(bb_30m_line) // Delete the previous line if it exists
+    line.delete(bb_30m_upper_line)
+bb_30m_line := line.new(x1 = bar_index, y1 = bb_lower_30m[0], x2 = bar_index + 3, y2 = bb_lower_30m[0], color = #ac6cff, width = 2, style = line.style_solid) // Create a new line
+bb_30m_upper_line := line.new(x1 = bar_index, y1 = bb_upper_30m[0], x2 = bar_index + 3, y2 = bb_upper_30m[0], color = #ac6cff, width = 2, style = line.style_solid) // Create a new line
+
+// ABOVE THIS --------------------------------
+
+// Use prior bar's high, low, and close directly
+highPrevDay = high[1]
+lowPrevDay = low[1]
+closePrevDay = close[1]
+
+pivot = (high[1] + low[1] + close[1]) / 3
+r1 = 2 * pivot - low[1]
+s1 = 2 * pivot - high[1]
+s2 = pivot - (high[1] - low[1])
+
+var line s2_line = na // Declare as a line type
+if not na(s2_line)
+    line.delete(s2_line) // Delete the previous line if it exists
+s2_line := line.new(x1 = bar_index, y1 = s2, x2 = bar_index + 3, y2 = s2, color = color.orange, width = 2, style = line.style_dotted) // Create a new line
+
+var line s1_line = na // Declare as a line type
+if not na(s1_line)
+    line.delete(s1_line) // Delete the previous line if it exists
+s1_line := line.new(x1 = bar_index, y1 = s1, x2 = bar_index + 3, y2 = s1, color = color.orange, width = 2, style = line.style_dotted) // Create a new line
+
+var line r1_line = na // Declare as a line type
+if not na(r1_line)
+    line.delete(r1_line) // Delete the previous line if it exists
+r1_line := line.new(x1 = bar_index, y1 = r1, x2 = bar_index + 3, y2 = r1, color = color.orange, width = 2, style = line.style_dotted) // Create a new line
+
+var line p_line = na // Declare as a line type
+if not na(p_line)
+    line.delete(p_line) // Delete the previous line if it exists
+p_line := line.new(x1 = bar_index, y1 = pivot, x2 = bar_index + 3, y2 = pivot, color = color.orange, width = 1, style = line.style_solid) // Create a new line
+
+//label.new(x=bar_index, y=r1, text="R1: " + str.tostring(r1, "#.##"), textcolor=color.orange)
+
+// Inputs for customization
+showLabels = input.bool(true, title = 'Show Pivot Labels')
+lineWidth = input.int(1, title = 'Line Width', minval = 1)
+
+// Combine the values into a single string
+pivot_values_text = 'R1: ' + str.tostring(r1, '#.###') + ' \Pivot: ' + str.tostring(pivot, '#.###') + ' \S1: ' + str.tostring(s1, '#.###') + ' \S2: ' + str.tostring(s2, '#.###')
+
+// Create a single label to display the values
+var label pivot_label = na
+if not na(pivot_label)
+    label.delete(pivot_label)
+if not remove_floats
+    pivot_label := label.new(bar_index + float_offset, low[1] + 4 * atr, pivot_values_text, style = label.style_label_left, color = color.orange, textcolor = color.white)
+
+// Plot pivot levels
+//line.new(bar_index[1], pivot, bar_index, pivot, color=color.orange, width=lineWidth, extend=extend.right)
+//line.new(bar_index[1], r1, bar_index, r1, color=color.green, width=lineWidth, extend=extend.right)
+//line.new(bar_index[1], s1, bar_index, s1, color=color.red, width=lineWidth, extend=extend.right)
+//line.new(bar_index[1], s2, bar_index, s2, color=color.purple, width=lineWidth, extend=extend.right)
+
+// RMV
+
+
+// User Inputs
+atrLength1 = input(3, title = 'RMV - ATR Length 1')
+atrLength2 = input(5, title = 'RMV - ATR Length 2')
+atrLength3 = input(8, title = 'RMV - ATR Length 3')
+normLength = input(5, title = 'RMV - Normalization Lookback')
+showCross = input(true, title = 'RMV - Show Below Bars ')
+showBackgroundRMV = input(true, title = 'RMV - Show Background')
+
+// Calculate ATR for different periods
+atr1 = ta.atr(atrLength1)
+atr2 = ta.atr(atrLength2)
+atr3 = ta.atr(atrLength3)
+
+// Compute average ATR as a measure of tightness
+avgATR = (atr1 + atr2 + atr3) / 3
+
+// Normalize the ATR within the lookback period
+minATR = ta.lowest(avgATR, normLength)
+maxATR = ta.highest(avgATR, normLength)
+rmv = 100 * (avgATR - minATR) / (maxATR - minATR)
+
+// Define color zones
+colorRMV = rmv < 10 ? color.rgb(76, 175, 79, 54) : rmv < 20 ? color.rgb(33, 149, 243, 53) : rmv < 30 ? color.rgb(255, 153, 0, 54) : color.red
+
+// Plot RMV Histogram
+// plot(rmv, title="RMV", color=colorRMV, linewidth=2, style=plot.style_histogram)
+
+// Background Color for easy visualization
+bgcolor(not cleanup and showBackgroundRMV and rmv < 10 ? color.rgb(76, 175, 79, 87) : na)
+
+// Plot Cross Below Bars if enabled
+plotshape(series = showCross and rmv < 30, location = location.belowbar, color = colorRMV, style = shape.diamond, size = size.tiny, title = 'RMV Signal')
+
+// END RMV
+
+///////////////////////////////////////////////////////////////
+
+
+//Relative Price Strength (RS) Rating or Relative Strenght.
+//This is a measure of a stock's price performance over the last
+//twelve months, compared to all US stocks.
+//The rating scale ranges frome 1 (lowest) to 99 (highest)
+//Let's create an equivalent here for TradingView!
+//
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Fred6724
+// RaviYendru thank you for providing the intial script
+
+//@version=6
+//indicator(title='RS Rating', shorttitle='RS Rating', overlay=true, max_bars_back = 253)
+
+//if show_rsrating
+// Constant value
+comparativeTickerId = 'SP:SPX' // For RS Score Calculation, the SPX Value only makes sens because of the GitHub project
+
+// = is_30min_60min ? na : cloudcolour2
+
+// Inputs
+hideRSRat = input(false, title = 'Hide Rating', group = 'RS Line')
+ratingOnly = input(false, title = 'Rating Only', group = 'RS Line')
+// seedetail   = input(false, title='Display the 3 results', group = 'Parameters', inline='0')
+colorRS = input(color.rgb(0, 0, 255, 50), title = 'Color', group = 'RS Line', inline = 'a')
+lineTicker = input('SP:SPX', title = 'Comparative Symbol for Line', group = 'Shape & Offset', tooltip = 'Reference ticker used for calculation of the RS Line.')
+SpxValue = input(4200, title = 'Approximate Value of Comparative Symbol', group = 'Shape & Offset', tooltip = 'Used to gather a constant value')
+offset = input.int(80, minval = 0, maxval = 2000, title = 'Offset (%)', group = 'Shape & Offset', tooltip = 'Used to display the RS Line under the price.')
+plotNewHigh = input(true, title = 'Plot RS New Highs', group = 'RS Line New High')
+rsNewHigh = input.string('RS New Highs', title = 'Type', options = ['RS New Highs', 'RS New Highs Before Price', 'Historical RS New Highs', 'Historical RS New Highs  Before Price'], group = 'RS Line New High', inline = 'b')
+blueDotCol = input(color.rgb(121, 213, 242, 62), title = 'Color', group = 'RS Line New High', inline = 'b')
+lookback = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Highs.', inline = 'b')
+sizeLabHigh = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
+plotNewLow = input(false, title = 'Plot RS New Lows', group = 'RS Line New High')
+rsNewLow = input.string('Historical RS New Lows', title = 'Type', options = ['RS New Lows', 'RS New Lows Before Price', 'Historical RS New Lows', 'Historical RS New Lows  Before Price'], group = 'RS Line New High', inline = 'x')
+redDotCol = input(color.rgb(255, 82, 82, 62), title = 'Color', group = 'RS Line New High', inline = 'x')
+lookback2 = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Lows.', inline = 'x')
+sizeLabLow = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
+boolMa = input(false, title = 'Display MA 1 on RS Line', group = '1st MA on RS Line')
+lenMa = input(21, title = 'Lenght Da', group = '1st MA on RS Line', inline = 'c')
+colMa = input(color.orange, title = 'Color', group = '1st MA on RS Line', inline = 'c')
+typMa = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
+lenMaWe = input(10, title = 'Lenght We', group = '1st MA on RS Line', inline = 'c')
+typMaWe = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
+fillMa = input(false, title = 'Area Color', group = '1st MA on RS Line')
+posCol = input(color.rgb(0, 230, 119, 75), title = 'Positive Area', group = '1st MA on RS Line', inline = 'd')
+negCol = input(color.rgb(255, 82, 82, 75), title = 'Negative Area', group = '1st MA on RS Line', inline = 'd')
+boolMa2 = input(false, title = 'Display MA 2 on RS Line', group = '2nd MA on RS Line')
+lenMa2 = input(50, title = 'Lenght Da', group = '2nd MA on RS Line', inline = 'c')
+colMa2 = input(color.red, title = 'Color', group = '2nd MA on RS Line', inline = 'c')
+typMa2 = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
+lenMa2We = input(21, title = 'Lenght We', group = '2nd MA on RS Line', inline = 'c')
+typMa2We = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
+allowReplay = input(false, title = 'Use fix values for replay mode', group = 'Replay mode (Approximate Method)', tooltip = 'Here we use constant values in order to provide the environment regardless of the date. See RSRATING ticker and report close values to have the last data.')
+first2 = input(195.93, title = 'For 99 stocks', group = 'Replay mode (Approximate Method)')
+scnd2 = input(117.11, title = 'For 90+ stocks', group = 'Replay mode (Approximate Method)')
+thrd2 = input(99.04, title = 'For 70+ stocks', group = 'Replay mode (Approximate Method)')
+frth2 = input(91.66, title = 'For 50+ stocks', group = 'Replay mode (Approximate Method)')
+ffth2 = input(80.96, title = 'For 30+ stocks', group = 'Replay mode (Approximate Method)')
+sxth2 = input(53.64, title = 'For 10+ stocks', group = 'Replay mode (Approximate Method)')
+svth2 = input(24.86, title = 'For 1- stocks', group = 'Replay mode (Approximate Method)')
+
+
+// Blue Dot
+// If Blue Dot is ste to 250 Da, than we want it to be set on 52 We on the Weekly TimeFrame
+if lookback == 250 and timeframe.isweekly
+    lookback := 52
+    lookback
+if lookback2 == 250 and timeframe.isweekly
+    lookback2 := 52
+    lookback2
+
+// Switch Label Size
+highLabel = switch sizeLabHigh
+    'Normal' => size.normal
+    'Tiny' => size.tiny
+    'Small' => size.small
+    'Large' => size.large
+
+lowLabel = switch sizeLabLow
+    'Normal' => size.normal
+    'Tiny' => size.tiny
+    'Small' => size.small
+    'Large' => size.large
+
+// Using bar index in case of IPO to avoid NaN results
+// Added max_bars_max = 253 to improve display speed
+n63 = bar_index < 63 ? bar_index : 63
+n126 = bar_index < 126 ? bar_index : 126
+n189 = bar_index < 189 ? bar_index : 189
+n252 = bar_index < 252 ? bar_index : 252
+
+
+// Comparative Ticker for RS Line
+comparativeSymbol = request.security(lineTicker, timeframe.period, close)
+// RS Line but multiplied by a little bit less than the constant value of the comparative ticker for correct display
+rsCurve = close / comparativeSymbol
+// Adapt Offset for low ADR grapghs like indices and sectors
+// Adapt Ratio for Sectors and Indices
+if syminfo.industry == 'Investment Trusts/Mutual Funds'
+    offset := 90
+    offset
+    // We use a wider offset for Weekly timeframe for a smoother display
+rsRatio = timeframe.isweekly ? SpxValue * (offset - 10) / 100 : SpxValue * offset / 100
+rs = rsCurve * rsRatio
+prevlookback = lookback
+prevlookback2 = lookback2 // For RS New Lows
+lookback := math.min(lookback - 1, bar_index)
+// = is_30min_60min ? na : cloudcolour2
+
+rsPlot = plot(rs, title = 'RS Line', style = plot.style_line, linewidth = 1, color = show_rsrating ? na : colorRS)
+
+// 1st MA on RS Line
+// SMA and EMA
+rsMA = ta.sma(rs, lenMa)
+if typMa == 'SMA' and not timeframe.isweekly
+    rsMA := ta.sma(rs, lenMa)
+    rsMA
+if typMa == 'EMA' and not timeframe.isweekly
+    rsMA := ta.ema(rs, lenMa)
+    rsMA
+if typMaWe == 'SMA' and timeframe.isweekly
+    rsMA := ta.sma(rs, lenMaWe)
+    rsMA
+if typMaWe == 'EMA' and timeframe.isweekly
+    rsMA := ta.ema(rs, lenMaWe)
+    rsMA
+
+maPlot = plot(boolMa ? rsMA : na, color = show_rsrating ? na : colMa, linewidth = 1)
+
+// Color Filling
+// I will use an invisible MA to be able to choose or not the display of the fill
+maPlot2 = plot(boolMa and fillMa ? rsMA : na, color = color.rgb(0, 0, 0, 100), linewidth = 1)
+// This variable gets the color that will be used for the fill
+fillCol = rs > rsMA ? posCol : negCol
+// Here if a MA is missing, there is no fill
+fill(rsPlot, maPlot2, color = show_rsrating ? na : fillCol)
+
+
+// 2nd MA on RS Line
+// SMA and EMA
+rsMA2 = ta.sma(rs, lenMa2)
+if typMa2 == 'SMA' and not timeframe.isweekly
+    rsMA2 := ta.sma(rs, lenMa2)
+    rsMA2
+if typMa2 == 'EMA' and not timeframe.isweekly
+    rsMA2 := ta.ema(rs, lenMa2)
+    rsMA2
+if typMa2We == 'SMA' and timeframe.isweekly
+    rsMA2 := ta.sma(rs, lenMa2We)
+    rsMA2
+if typMa2We == 'EMA' and timeframe.isweekly
+    rsMA2 := ta.ema(rs, lenMa2We)
+    rsMA2
+
+maPlot3 = plot(boolMa2 ? rsMA2 : na, color = show_rsrating ? na : colMa2, linewidth = 1)
+
+
+
+
+// Historical New Highs & New Highs Before Price
+var label newHigh = na
+histNH = ta.highest(rs, prevlookback)
+histCl = ta.highest(high, prevlookback)
+// Historical RS New High
+if rsNewHigh == 'Historical RS New Highs' and plotNewHigh and rs == histNH
+    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
+    newHigh
+    // Historical RS New High Before Price
+if rsNewHigh == 'Historical RS New Highs  Before Price' and plotNewHigh and rs == histNH and high < histCl
+    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
+    newHigh
+    // RS New High
+if barstate.islast and rsNewHigh == 'RS New Highs' and plotNewHigh and rs == histNH
+    label.delete(newHigh)
+    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
+    newHigh
+    // RS New High Before Price
+if barstate.islast and rsNewHigh == 'RS New Highs Before Price' and plotNewHigh and rs == histNH and high < histCl
+    label.delete(newHigh)
+    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
+    newHigh
+
+
+// Historical New Lows & New Lows Before Price
+var label newLow = na
+histNL = ta.lowest(rs, prevlookback2)
+histClL = ta.lowest(low, prevlookback2)
+// Historical RS New Low
+if rsNewLow == 'Historical RS New Lows' and plotNewLow and rs == histNL
+    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
+    newLow
+    // Historical RS New Low Before Price
+if rsNewLow == 'Historical RS New Lows  Before Price' and plotNewLow and rs == histNL and low > histClL
+    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
+    newLow
+    // RS New Low
+if barstate.islast and rsNewLow == 'RS New Lows' and plotNewLow and rs == histNL
+    label.delete(newLow)
+    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
+    newLow
+    // RS New Low Before Price
+if barstate.islast and rsNewLow == 'RS New Lows Before Price' and plotNewLow and rs == histNL and low > histClL
+    label.delete(newLow)
+    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
+    newLow
+
+
+
+// Calculation of the RS Rating
+// Getting ticker and reference ticker daily data
+closeDa = request.security(syminfo.tickerid, 'D', close)
+spxCloseDa = request.security(comparativeTickerId, 'D', close)
+
+// Calculation of the performance from 1 to 4 last quarters
+// Ticker
+perfTicker63 = closeDa / closeDa[n63]
+perfTicker126 = closeDa / closeDa[n126]
+perfTicker189 = closeDa / closeDa[n189]
+perfTicker252 = closeDa / closeDa[n252]
+
+// SP500 of reference ticker
+perfComp63 = spxCloseDa / spxCloseDa[n63]
+perfComp126 = spxCloseDa / spxCloseDa[n126]
+perfComp189 = spxCloseDa / spxCloseDa[n189]
+perfComp252 = spxCloseDa / spxCloseDa[n252]
+
+// Using Formula to calculate a relative score of the ticker and the SP500 with the last quarter weighted double
+float rs_stock = 0.4 * perfTicker63 + 0.2 * perfTicker126 + 0.2 * perfTicker189 + 0.2 * perfTicker252
+float rs_ref = 0.4 * perfComp63 + 0.2 * perfComp126 + 0.2 * perfComp189 + 0.2 * perfComp252
+
+// Calculation of the total relative score or rs performance
+float totalRsScore = rs_stock / rs_ref * 100
+float totalRsRating = -1
+
+// Here we calculated the relative score of the stock. The goal is now to assign the percentile correctly
+// For this I took the curve given by my fork repo of Skyte on Rs Log and tried to calibrate the better possible
+// the output curve of the relative performance of the 6,6xx stocks.
+// Link: https://github.com/Fred6725/rs-log/blob/main/output/rs_stocks.csv
+// Here is the curve in ASCII Art; on the x-axis, the Rs Rating and on the y-axis, the calculated performance.
+
+//                      
+//                                                                                        /                               
+//                                                                                        /                               
+//                                                                                        /                               
+//                                                                                        /                               
+//,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/,,,,,,,,,,,,,,,,,              
+//                                                                                        /                               
+//                                                                                        /                               
+//                                                                                        /                               
+//                                                                                        /                               
+//                                                                                       |                               
+//                                                                                       /                               
+//                                                                                      ‾                                 
+//                                                                                     ‾                                   
+//                                                                                   -‾                                    
+//                                                                           _____, ‾                                     
+//                                         _____----------------‾‾‾‾‾‾‾‾‾‾‾‾‾                                                   
+//                        __ */‾‾‾‾‾‾‾‾‾‾‾‾                                                                                       
+//             __ ,,----‾‾                                                                                                 
+//          _/                                                                                                           
+//        /                                                                                                               
+//       |                                                                                                     
+// ______|________________ _______________________________ _____________________________________            
+//       |0               |20             |40             |60             |80              |100   
+//
+// I decided to cut this curve in 7 different levels that needs to be entered each day.
+// These are relative strength scores corresponding to percentiles 98, 89, 69, 49, 29, 9 and 1.
+// Finally I used the request.seed() function to auto update these levels automatically on a daily basis.
+// Everything is managed in this repo if you're curious:
+// https://github.com/Fred6725/relative-strength/tree/main    (Fork from Skyte)
+// More precisly in rs_ranking.py for extracting what I needed and in workflows/output.yml for the auto update.
+// The update is done in the private fork of the seed tradingview original repo, checked and synchronised automatically
+// I tried to uplad the full 6,6xx list of relative strength score and rs rating but the display speed was too long.
+
+
+// Use the request.seed() function to access the RS Score environment of all the market
+curveRsPerf = request.seed('seed_fred6725_rs_rating', 'RSRATING', close)
+
+// To prevent loosing data because of week-ends and public holidays I decided to send the value 5 times in a row.
+// Which gives 5*7 = 35 bars. (seed_fred6725_rs_rating:rsrating)
+// Depending of the day we look at the graph we will have a variable amount of bars. 
+// The goal is to get these 7 numbers anyway.
+
+// In case the graph is not updated, we count the number of bars since we have the first data.
+// Calculation of the number of bar since we have the first data
+delta = ta.barssince(na(curveRsPerf) != true)
+
+// Table to store the different values
+var array<float> different_values = array.new_float(7)
+
+// Counter for stored values
+var int counter = 0
+
+// Variable for storage of the environment
+float first = 0
+float scnd = 0
+float thrd = 0
+float frth = 0
+float ffth = 0
+float sxth = 0
+float svth = 0
+
+// Browse seed's values and store the first 7 different values
+if not allowReplay
+    for i = delta to 34 + delta by 1
+        close_value = nz(curveRsPerf[i])
+        if not array.includes(different_values, close_value) and counter < 7 and close_value != 0
+            array.set(different_values, counter, close_value)
+            counter := counter + 1
+            counter
+
+    // Assign stored values to variables
+    first := array.get(different_values, 0)
+    scnd := array.get(different_values, 1)
+    thrd := array.get(different_values, 2)
+    frth := array.get(different_values, 3)
+    ffth := array.get(different_values, 4)
+    sxth := array.get(different_values, 5)
+    svth := array.get(different_values, 6)
+    svth
+
+// Assign fix value for getting an approximation in Replay mode
+if allowReplay
+    first := first2
+    scnd := scnd2
+    thrd := thrd2
+    frth := frth2
+    ffth := ffth2
+    sxth := sxth2
+    svth := svth2
+    svth
+
+// Now that we've recovered the environment, we can assign a percentile using a simple linear approximation of the curve (+ adjustment).
+if totalRsScore >= first
+    totalRsRating := 99
+    totalRsRating
+if totalRsScore <= svth
+    totalRsRating := 1
+    totalRsRating
+
+// Function to attribute the percentile with a simple linear approximation
+f_attributePercentile(totalRsScore, tallerPerf, smallerPerf, rangeUp, rangeDn, weight) =>
+    sum = totalRsScore + (totalRsScore - smallerPerf) * weight // weight is used for manual calibration
+    if sum > tallerPerf - 1
+        sum := tallerPerf - 1
+        sum
+    k1 = smallerPerf / rangeDn
+    k2 = (tallerPerf - 1) / rangeUp
+    k3 = (k1 - k2) / (tallerPerf - 1 - smallerPerf)
+    RsRating = sum / (k1 - k3 * (totalRsScore - smallerPerf))
+    if RsRating > rangeUp
+        RsRating := rangeUp
+        RsRating
+    if RsRating < rangeDn
+        RsRating := rangeDn
+        RsRating
+    RsRating
+
+// Between 199 & 120 the score where approx 98 to 90.
+if totalRsScore < first and totalRsScore >= scnd
+    totalRsRating := f_attributePercentile(totalRsScore, first, scnd, 98, 90, 0.33)
+    totalRsRating
+    // Between 119 and 100 we have scores between 89 and 70.
+if totalRsScore < scnd and totalRsScore >= thrd
+    totalRsRating := f_attributePercentile(totalRsScore, scnd, thrd, 89, 70, 2.1)
+    totalRsRating
+    // Between 100 and 91 we have scores between 69 and 50.
+if totalRsScore < thrd and totalRsScore >= frth
+    totalRsRating := f_attributePercentile(totalRsScore, thrd, frth, 69, 50, 0)
+    totalRsRating
+    // Between 90 and 82 we have scores between 49 and 30.
+if totalRsScore < frth and totalRsScore >= ffth
+    totalRsRating := f_attributePercentile(totalRsScore, frth, ffth, 49, 30, 0)
+    totalRsRating
+    // Between 81 and 56 we have scores between 29 and 10.
+if totalRsScore < ffth and totalRsScore >= sxth
+    totalRsRating := f_attributePercentile(totalRsScore, ffth, sxth, 29, 10, 0)
+    totalRsRating
+    // Between 55 and 28 we have scores between 9 and 2.
+if totalRsScore < sxth and totalRsScore >= svth
+    totalRsRating := f_attributePercentile(totalRsScore, sxth, svth, 9, 2, 0)
+    totalRsRating
+
+// Check if one of this value is empty for replay mode
+for i = 0 to 6 by 1
+    if nz(array.get(different_values, i)) == 0 and not allowReplay
+        totalRsRating := -1
+        totalRsRating
+
+// Display the RS Rating
+// The results can only be used in Daily TimeFrame
+isDaily = timeframe.isdaily
+labelText1 = '                RS Rating'
+labelText2 = ''
+// Here we want to display 'RS' without value if one of the constants is missing
+if isDaily and totalRsRating != -1
+    labelText2 := '\n\n       ' + str.tostring(totalRsRating, '#0')
+    labelText2
+    // Rating Only
+if ratingOnly
+    labelText1 := ''
+    labelText2 := '\n    ' + str.tostring(totalRsRating, '#0')
+    labelText2
+    // Display the labels
+label1 = hideRSRat == false and barstate.islast ? label.new(bar_index, rs, text = labelText1, color = show_rsrating ? na : color.rgb(0, 0, 0, 100), size = size.normal, textcolor = show_rsrating ? na : colorRS, style = label.style_label_center, textalign = text.align_left, yloc = yloc.price) : na
+label2 = hideRSRat == false and barstate.islast ? label.new(bar_index, rs, text = labelText2, color = show_rsrating ? na : color.rgb(0, 0, 0, 100), size = size.large, textcolor = show_rsrating ? na : colorRS, style = label.style_label_center, textalign = text.align_left, yloc = yloc.price) : na
+
+// Delete previous Labels (When new candle opens or when replay mode, the labels were piling on)
+label.delete(label1[1])
+label.delete(label2[1])
