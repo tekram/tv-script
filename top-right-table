@@ -48,11 +48,21 @@ extended_sma_input = input(50, 'SMA', tooltip = 'Which SMA do you want to see ex
 tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large])
 bg_col = input(#00000000, title = 'Background Color')
 txt_col = input(color.rgb(0, 0, 0), title = 'Text Color')
-show_empty_row = input(true, title = 'Add an empty row above the displayed values', tooltip = 'Serves the purpose of not having the pane icons overlap with the ' + 'text in the table if multiple panes are shown and the chart pane is hovered')
+show_empty_row = input(true, title = 'Add an empty row above the displayed values', tooltip = 'Serves the purpose of not having the pane icons overlap with the ' + 'text in the table if multiple panes[...]')
 show_rsrating = input(true, title = 'Hide RS Rating')
 show_4_ema = input(false, title = 'Show 4 EMA on Chart (red line)')
 show_bb_dots = input(false, title = 'Show 30m and 1hr BB dots')
 
+// === START: 21 EMA + BAND (Daily) ===
+// Add these inputs near your other show_* inputs (e.g. after show_4_ema / show_bb_dots)
+show_21ema_band = input.bool(false, title = 'Show 21 EMA + Band')
+band_type_21 = input.string('Percent', title = '21EMA Band Type', options = ['Percent', 'ATR'])
+band_pct_21 = input.float(0.5, title = '21EMA Band (%)', step = 0.1)
+band_atr_len_21 = input.int(14, title = '21EMA Band ATR Length', minval = 1)
+band_atr_mult_21 = input.float(1.0, title = '21EMA Band ATR Multiplier', step = 0.1)
+band_color_21 = input.color(color.orange, title = '21EMA Color')
+band_fill_color_21 = input.color(color.new(color.orange, 90), title = '21EMA Band Fill Color')
+// === END: 21 EMA + BAND (Daily) ===
 
 arp = 100 * (ta.sma(high / low, adrp_len) - 1)
 [adrp, atr, lod_dist] = request.security(syminfo.tickerid, 'D', [arp, ta.atr(atr_len), 100 * (close - low) / ta.atr(atr_len)])
@@ -290,7 +300,7 @@ twenty_dema = ta.ema(close, 20)
 fifty_dsma = ta.sma(close, 50)
 two_hundered_dsma = ta.sma(close, 200)
 
-five_diff = (close - five_dema) / close
+tfive_diff = (close - five_dema) / close
 ten_diff = (close - ten_dema) / close
 twenty_diff = (close - twenty_dema) / close
 fifty_diff = (close - fifty_dsma) / close
@@ -348,7 +358,7 @@ percent_above_200 = request.security(symbolToPull4, '1D', close)
 
 table d = table.new(position.bottom_left, 2, 2, bgcolor = bg_col)
 
-[spy_daily, spy_current_close, spy_current_ema, spy_current_low, spy_daily_low, spy_daily_ema] = request.security('SPY', 'D', [close, close, ta.ema(close, 20), low, low, ta.ema(close, 20)], lookahead = barmerge.lookahead_on)
+[spy_daily, spy_current_close, spy_current_ema, spy_current_low, spy_daily_low, spy_daily_ema] = request.security('SPY', 'D', [close, close, ta.ema(close, 20), low, low, ta.ema(close, 20)], lookahead [...])
 ma50 = ta.sma(spy_daily, 50)
 ma20 = ta.ema(spy_daily, 20)
 
@@ -479,7 +489,7 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         table.cell(t, 2, 4, str.tostring(math.round(atr, 2)), text_color = txt_col, text_size = tbl_size)
     if show_lod_dist
         table.cell(t, 1, 5, 'LoD dist. / (High/Low)', text_color = txt_col, text_size = tbl_size)
-        table.cell(t, 2, 5, str.tostring(math.round(lod_dist)) + '% / ' + str.tostring(math.round(yesterdayHigh, 4)) + ' / ' + str.tostring(math.round(yesterdayLow, 4)), text_color = txt_col, text_size = tbl_size)
+        table.cell(t, 2, 5, str.tostring(math.round(lod_dist)) + '% / ' + str.tostring(math.round(yesterdayHigh, 4)) + ' / ' + str.tostring(math.round(yesterdayLow, 4)), text_color = txt_col, text_siz[...]
     if show_ADVS
         table.cell(t, 1, 6, tfDaily ? 'Avg Dly $ Vol' : 'Avg $ Vol', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 6, '$' + str.tostring(math.round(advdolDa, 2), '0.00') + uVDoll, text_color = txt_col, text_size = tbl_size)
@@ -499,7 +509,7 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         else
             bgcolor30m = prior_30m_high_diff > 0 ? #17880b51 : #880b0b50
             table.cell(t, 1, 9, '30 Min / Pior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
-            table.cell(t, 2, 9, str.tostring(isInsideThirtyMinCandle) + ' ' + str.tostring(math.round(prior_30m_high, 4)) + ' (' + str.tostring(math.round(prior_30m_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_30min, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
+            table.cell(t, 2, 9, str.tostring(isInsideThirtyMinCandle) + ' ' + str.tostring(math.round(prior_30m_high, 4)) + ' (' + str.tost[...]
     if show_volBuzz
         table.cell(t, 1, 10, 'Vol. Buzz', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 10, str.tostring(math.round(volBuzz)) + '%', text_color = txt_col, text_size = tbl_size)
@@ -512,17 +522,17 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         bgcolor200 = percent_change_from_200_sma > 0 ? #17880b51 : #880b0b50
 
         table.cell(t, 1, 12, str.tostring('Extended EMA 5'), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor5)
-        table.cell(t, 2, 12, str.tostring(math.round(extended_5_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor5)
+        table.cell(t, 2, 12, str.tostring(math.round(extended_5_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ')', text_c[...]
         if show_longer_ma or percent_change_from_sma < 0.1
             table.cell(t, 1, 15, 'Extended SMA ' + str.tostring(extended_sma_input), text_color = #1114a1, text_size = tbl_size, bgcolor = bgcolorinput_sma)
-            table.cell(t, 2, 15, str.tostring(math.round(extended_sma, 2)) + ' / ' + str.tostring(math.round(percent_change_from_sma, 2)) + '% (' + str.tostring(math.round(price_sma, 2)) + ')', text_color = #1114a1, text_size = tbl_size, bgcolor = bgcolorinput_sma)
+            table.cell(t, 2, 15, str.tostring(math.round(extended_sma, 2)) + ' / ' + str.tostring(math.round(percent_change_from_sma, 2)) + '% (' + str.tostring(math.round(price_sma, 2)) + ')', text_c[...]
         table.cell(t, 1, 14, 'Extended EMA ' + str.tostring(extended_ema_input), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor20)
-        table.cell(t, 2, 14, str.tostring(math.round(extended_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor20)
+        table.cell(t, 2, 14, str.tostring(math.round(extended_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ')', text_color[...]
         table.cell(t, 1, 13, 'Extended EMA 10', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor10)
-        table.cell(t, 2, 13, str.tostring(math.round(extended_10_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ')', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor10)
+        table.cell(t, 2, 13, str.tostring(math.round(extended_10_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ')', t[...]
         if show_longer_ma or percent_change_from_200_sma < 0.1
             table.cell(t, 1, 16, str.tostring('200 SMA'), text_color = #c40f0f, text_size = tbl_size, bgcolor = bgcolor200)
-            table.cell(t, 2, 16, str.tostring(math.round(two_hundered_diff, 2)) + ' / ' + str.tostring(math.round(percent_change_from_200_sma, 2)) + '% (' + str.tostring(math.round(two_hundered_dsma, 2)) + ')', text_color = #c40f0f, text_size = tbl_size, bgcolor = bgcolor200)
+            table.cell(t, 2, 16, str.tostring(math.round(two_hundered_diff, 2)) + ' / ' + str.tostring(math.round(percent_change_from_200_sma, 2)) + '% (' + str.tostring(math.round(two_hundered_dsma, [...]
     if show_launch_pad and (pos_launch_pad or swing_launch_pad)
         if swing_launch_pad
             table.cell(t, 1, 19, str.tostring('Swing Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
@@ -537,7 +547,7 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         table.cell(t, 1, 17, str.tostring('% Above VWAP (20%-70%)/ TICK (-1K - 1K)'), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortick)
         table.cell(t, 2, 17, str.tostring(math.round(percent_above_vwap, 2)) + ' / ' + str.tostring(math.round(tick, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortick)
         table.cell(t, 1, 18, str.tostring('% Above 5/20 Day'), text_color = color.white, text_size = tbl_size, bgcolor = bgcolorabove20)
-        table.cell(t, 2, 18, str.tostring(math.round(percent_above_5, 2)) + ' / ' + str.tostring(math.round(percent_above_20, 2)), text_color = color.white, text_size = tbl_size, bgcolor = bgcolorabove20)
+        table.cell(t, 2, 18, str.tostring(math.round(percent_above_5, 2)) + ' / ' + str.tostring(math.round(percent_above_20, 2)), text_color = color.white, text_size = tbl_size, bgcolor = bgcolorabov[...]
     if show_sector
         table.cell(t, 1, 22, 'Sector', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 22, sector, text_color = txt_col, text_size = tbl_size)
@@ -548,17 +558,16 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         if rsiValue < 31
             bgcolor3 = percent_change_from_3_ema > 0 ? #17880b51 : #880b0b50
             table.cell(t, 1, 11, 'Extended 3 EMA / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor3)
-            table.cell(t, 2, 11, str.tostring(math.round(price_3_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_3_ema, 2)) + '% / ' + str.tostring(math.round(rsiValue, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor3)
+            table.cell(t, 2, 11, str.tostring(math.round(price_3_ema, 2)) + ' / ' + str.tostring(math.round(percent_change_from_3_ema, 2)) + '% / ' + str.tostring(math.round(rsiValue, 2)), text_color [...]
         else
             bgcolor4 = price_4_ema < close ? #17880b51 : #880b0b50
             table.cell(t, 1, 11, 'Pivot 4 EMA / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor4)
-            table.cell(t, 2, 11, str.tostring(math.round(price_4_ema, 2)) + ' (' + str.tostring(math.round(percent_change_from_4_ema, 2)) + '%) / ' + str.tostring(math.round(rsiValue, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor4)
+            table.cell(t, 2, 11, str.tostring(math.round(price_4_ema, 2)) + ' (' + str.tostring(math.round(percent_change_from_4_ema, 2)) + '%) / ' + str.tostring(math.round(rsiValue, 2)), text_color [...]
     if show_fundamentals
         table.cell(t, 1, 23, 'Fundamentals (PE/EBIDTA)', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 23, 'X', text_color = txt_col, text_size = tbl_size)
         //table.merge_cells(t, 1, 18, 2, 18)
         //table.merge_cells(t, 1, 19, 2, 19)
-
 
 
 
@@ -737,7 +746,7 @@ var float bb_upper_4h = na
 var float bb_upper_6h = na
 
 // Combine the values into a single string
-bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###') + '\n2H: ' + str.tostring(bb_lower_2h, '#.###') + ' / ' + str.tostring(bb_upper_2h, '#.###') + '\n4H: ' + str.tostring(bb_lower_4h, '#.###') + ' / ' + str.tostring(bb_upper_4h, '#.###') + '\n6H: ' + str.tostring(bb_lower_6h, '#.###') + ' / ' + str.tostring(bb_upper_6h, '#.###')
+bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###'[...])
 
 // Create a single label to display the values
 var label bb_label = na
@@ -767,10 +776,23 @@ plot(is_today ? lower_band_1h : na, title = '1h Lower BB', color = color.rgb(82,
 // Plot the 1-hour lower Bollinger Band on the current chart with a navy dashed appearance
 // plot(bb_lower_1h, title="1H Lower BB", color=color.rgb(49, 27, 146, 52), linewidth=1)
 
-ema_values_text = '20 EMA (hourly): ' + str.tostring(math.round(percent_change_from_20_ema_hourly, 2)) + '% (' + str.tostring(math.round(price_20_ema_hourly, 2)) + ') / ' + str.tostring(math.round(extended_5_ema, 2))
-ema_values_text := ema_values_text + '\n5 EMA: ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ') / ' + str.tostring(math.round(extended_5_ema, 2))
-ema_values_text := ema_values_text + '\n10 EMA: ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ') / ' + str.tostring(math.round(extended_10_ema, 2))
-ema_values_text := ema_values_text + '\n20 EMA: ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ') / ' + str.tostring(math.round(extended_ema, 2))
+ema_values_text = '20 EMA (hourly): ' + str.tostring(math.round(percent_change_from_20_ema_hourly, 2)) + '% (' + str.tostring(math.round(price_20_ema_hourly, 2)) + ') / ' + str.tostring(math.round(ext[...])
+ema_values_text := ema_values_text + '\n5 EMA: ' + str.tostring(math.round(percent_change_from_5_ema, 2)) + '% (' + str.tostring(math.round(five_dema, 2)) + ') / ' + str.tostring(math.round(extended_5[...])
+ema_values_text := ema_values_text + '\n10 EMA: ' + str.tostring(math.round(percent_change_from_10_ema, 2)) + '% (' + str.tostring(math.round(price_10_ema, 2)) + ') / ' + str.tostring(math.round(exten[...])
+ema_values_text := ema_values_text + '\n20 EMA: ' + str.tostring(math.round(percent_change_from_ema, 2)) + '% (' + str.tostring(math.round(price_ema, 2)) + ') / ' + str.tostring(math.round(extended_em[...])
+
+// === START: 21 EMA + BAND PLOT (Daily) ===
+// Use daily 21 EMA & ATR to plot the center & band on chart when enabled
+ema21_daily = request.security(syminfo.tickerid, 'D', ta.ema(close, 21))
+atr21_daily = request.security(syminfo.tickerid, 'D', ta.atr(band_atr_len_21))
+upper21 = band_type_21 == 'Percent' ? ema21_daily * (1 + band_pct_21 / 100.0) : ema21_daily + atr21_daily * band_atr_mult_21
+lower21 = band_type_21 == 'Percent' ? ema21_daily * (1 - band_pct_21 / 100.0) : ema21_daily - atr21_daily * band_atr_mult_21
+
+p21_center = plot(show_21ema_band ? ema21_daily : na, title = '21 EMA (Daily)', color = band_color_21, linewidth = 2)
+p21_upper = plot(show_21ema_band ? upper21 : na, title = '21 EMA Upper Band', color = color.new(band_color_21, 60), linewidth = 1)
+p21_lower = plot(show_21ema_band ? lower21 : na, title = '21 EMA Lower Band', color = color.new(band_color_21, 60), linewidth = 1)
+fill(show_21ema_band ? p21_upper : na, show_21ema_band ? p21_lower : na, color = show_21ema_band ? band_fill_color_21 : na)
+// === END: 21 EMA + BAND PLOT (Daily) ===
 
 bgcolor20 = percent_change_from_ema > 0 ? color.rgb(14, 61, 9, 4) : color.rgb(104, 11, 11, 16)
 
@@ -779,6 +801,11 @@ if not na(ema_label)
     label.delete(ema_label)
 if not remove_floats
     ema_label := label.new(bar_index + float_offset, low[1] + 2 * atr, ema_values_text, style = label.style_label_left, color = bgcolor20, textcolor = color.white)
+
+// === START: APPEND 21 EMA SUMMARY TO ema_values_text ===
+percent_change_from_21_ema = ema21_daily != 0 ? (close - ema21_daily) / ema21_daily * 100 : 0
+ema_values_text := ema_values_text + '\n21 EMA (D): ' + str.tostring(math.round(percent_change_from_21_ema, 2)) + '% (' + str.tostring(math.round(ema21_daily, 2)) + ')'
+// === END: APPEND 21 EMA SUMMARY ===
 
 bgcolorlod = low[1] < close ? color.rgb(14, 61, 9, 4) : color.rgb(104, 11, 11, 16)
 
@@ -923,38 +950,15 @@ lineTicker = input('SP:SPX', title = 'Comparative Symbol for Line', group = 'Sha
 SpxValue = input(4200, title = 'Approximate Value of Comparative Symbol', group = 'Shape & Offset', tooltip = 'Used to gather a constant value')
 offset = input.int(80, minval = 0, maxval = 2000, title = 'Offset (%)', group = 'Shape & Offset', tooltip = 'Used to display the RS Line under the price.')
 plotNewHigh = input(true, title = 'Plot RS New Highs', group = 'RS Line New High')
-rsNewHigh = input.string('RS New Highs', title = 'Type', options = ['RS New Highs', 'RS New Highs Before Price', 'Historical RS New Highs', 'Historical RS New Highs  Before Price'], group = 'RS Line New High', inline = 'b')
+rsNewHigh = input.string('RS New Highs', title = 'Type', options = ['RS New Highs', 'RS New Highs Before Price', 'Historical RS New Highs', 'Historical RS New Highs  Before Price'], group = 'RS Line N[...]
 blueDotCol = input(color.rgb(121, 213, 242, 62), title = 'Color', group = 'RS Line New High', inline = 'b')
 lookback = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Highs.', inline = 'b')
 sizeLabHigh = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
 plotNewLow = input(false, title = 'Plot RS New Lows', group = 'RS Line New High')
-rsNewLow = input.string('Historical RS New Lows', title = 'Type', options = ['RS New Lows', 'RS New Lows Before Price', 'Historical RS New Lows', 'Historical RS New Lows  Before Price'], group = 'RS Line New High', inline = 'x')
+rsNewLow = input.string('Historical RS New Lows', title = 'Type', options = ['RS New Lows', 'RS New Lows Before Price', 'Historical RS New Lows', 'Historical RS New Lows  Before Price'], group = 'RS L[...]
 redDotCol = input(color.rgb(255, 82, 82, 62), title = 'Color', group = 'RS Line New High', inline = 'x')
 lookback2 = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Lows.', inline = 'x')
 sizeLabLow = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
-boolMa = input(false, title = 'Display MA 1 on RS Line', group = '1st MA on RS Line')
-lenMa = input(21, title = 'Lenght Da', group = '1st MA on RS Line', inline = 'c')
-colMa = input(color.orange, title = 'Color', group = '1st MA on RS Line', inline = 'c')
-typMa = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
-lenMaWe = input(10, title = 'Lenght We', group = '1st MA on RS Line', inline = 'c')
-typMaWe = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
-fillMa = input(false, title = 'Area Color', group = '1st MA on RS Line')
-posCol = input(color.rgb(0, 230, 119, 75), title = 'Positive Area', group = '1st MA on RS Line', inline = 'd')
-negCol = input(color.rgb(255, 82, 82, 75), title = 'Negative Area', group = '1st MA on RS Line', inline = 'd')
-boolMa2 = input(false, title = 'Display MA 2 on RS Line', group = '2nd MA on RS Line')
-lenMa2 = input(50, title = 'Lenght Da', group = '2nd MA on RS Line', inline = 'c')
-colMa2 = input(color.red, title = 'Color', group = '2nd MA on RS Line', inline = 'c')
-typMa2 = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
-lenMa2We = input(21, title = 'Lenght We', group = '2nd MA on RS Line', inline = 'c')
-typMa2We = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
-allowReplay = input(false, title = 'Use fix values for replay mode', group = 'Replay mode (Approximate Method)', tooltip = 'Here we use constant values in order to provide the environment regardless of the date. See RSRATING ticker and report close values to have the last data.')
-first2 = input(195.93, title = 'For 99 stocks', group = 'Replay mode (Approximate Method)')
-scnd2 = input(117.11, title = 'For 90+ stocks', group = 'Replay mode (Approximate Method)')
-thrd2 = input(99.04, title = 'For 70+ stocks', group = 'Replay mode (Approximate Method)')
-frth2 = input(91.66, title = 'For 50+ stocks', group = 'Replay mode (Approximate Method)')
-ffth2 = input(80.96, title = 'For 30+ stocks', group = 'Replay mode (Approximate Method)')
-sxth2 = input(53.64, title = 'For 10+ stocks', group = 'Replay mode (Approximate Method)')
-svth2 = input(24.86, title = 'For 1- stocks', group = 'Replay mode (Approximate Method)')
 
 
 // Blue Dot
@@ -998,310 +1002,4 @@ if syminfo.industry == 'Investment Trusts/Mutual Funds'
     offset
     // We use a wider offset for Weekly timeframe for a smoother display
 rsRatio = timeframe.isweekly ? SpxValue * (offset - 10) / 100 : SpxValue * offset / 100
-rs = rsCurve * rsRatio
-prevlookback = lookback
-prevlookback2 = lookback2 // For RS New Lows
-lookback := math.min(lookback - 1, bar_index)
-// = is_30min_60min ? na : cloudcolour2
-
-rsPlot = plot(rs, title = 'RS Line', style = plot.style_line, linewidth = 1, color = show_rsrating ? na : colorRS)
-
-// 1st MA on RS Line
-// SMA and EMA
-rsMA = ta.sma(rs, lenMa)
-if typMa == 'SMA' and not timeframe.isweekly
-    rsMA := ta.sma(rs, lenMa)
-    rsMA
-if typMa == 'EMA' and not timeframe.isweekly
-    rsMA := ta.ema(rs, lenMa)
-    rsMA
-if typMaWe == 'SMA' and timeframe.isweekly
-    rsMA := ta.sma(rs, lenMaWe)
-    rsMA
-if typMaWe == 'EMA' and timeframe.isweekly
-    rsMA := ta.ema(rs, lenMaWe)
-    rsMA
-
-maPlot = plot(boolMa ? rsMA : na, color = show_rsrating ? na : colMa, linewidth = 1)
-
-// Color Filling
-// I will use an invisible MA to be able to choose or not the display of the fill
-maPlot2 = plot(boolMa and fillMa ? rsMA : na, color = color.rgb(0, 0, 0, 100), linewidth = 1)
-// This variable gets the color that will be used for the fill
-fillCol = rs > rsMA ? posCol : negCol
-// Here if a MA is missing, there is no fill
-fill(rsPlot, maPlot2, color = show_rsrating ? na : fillCol)
-
-
-// 2nd MA on RS Line
-// SMA and EMA
-rsMA2 = ta.sma(rs, lenMa2)
-if typMa2 == 'SMA' and not timeframe.isweekly
-    rsMA2 := ta.sma(rs, lenMa2)
-    rsMA2
-if typMa2 == 'EMA' and not timeframe.isweekly
-    rsMA2 := ta.ema(rs, lenMa2)
-    rsMA2
-if typMa2We == 'SMA' and timeframe.isweekly
-    rsMA2 := ta.sma(rs, lenMa2We)
-    rsMA2
-if typMa2We == 'EMA' and timeframe.isweekly
-    rsMA2 := ta.ema(rs, lenMa2We)
-    rsMA2
-
-maPlot3 = plot(boolMa2 ? rsMA2 : na, color = show_rsrating ? na : colMa2, linewidth = 1)
-
-
-
-
-// Historical New Highs & New Highs Before Price
-var label newHigh = na
-histNH = ta.highest(rs, prevlookback)
-histCl = ta.highest(high, prevlookback)
-// Historical RS New High
-if rsNewHigh == 'Historical RS New Highs' and plotNewHigh and rs == histNH
-    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
-    newHigh
-    // Historical RS New High Before Price
-if rsNewHigh == 'Historical RS New Highs  Before Price' and plotNewHigh and rs == histNH and high < histCl
-    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
-    newHigh
-    // RS New High
-if barstate.islast and rsNewHigh == 'RS New Highs' and plotNewHigh and rs == histNH
-    label.delete(newHigh)
-    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
-    newHigh
-    // RS New High Before Price
-if barstate.islast and rsNewHigh == 'RS New Highs Before Price' and plotNewHigh and rs == histNH and high < histCl
-    label.delete(newHigh)
-    newHigh := label.new(x = bar_index, y = rs, color = blueDotCol, style = label.style_circle, size = highLabel)
-    newHigh
-
-
-// Historical New Lows & New Lows Before Price
-var label newLow = na
-histNL = ta.lowest(rs, prevlookback2)
-histClL = ta.lowest(low, prevlookback2)
-// Historical RS New Low
-if rsNewLow == 'Historical RS New Lows' and plotNewLow and rs == histNL
-    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
-    newLow
-    // Historical RS New Low Before Price
-if rsNewLow == 'Historical RS New Lows  Before Price' and plotNewLow and rs == histNL and low > histClL
-    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
-    newLow
-    // RS New Low
-if barstate.islast and rsNewLow == 'RS New Lows' and plotNewLow and rs == histNL
-    label.delete(newLow)
-    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
-    newLow
-    // RS New Low Before Price
-if barstate.islast and rsNewLow == 'RS New Lows Before Price' and plotNewLow and rs == histNL and low > histClL
-    label.delete(newLow)
-    newLow := label.new(x = bar_index, y = rs, color = redDotCol, style = label.style_circle, size = lowLabel)
-    newLow
-
-
-
-// Calculation of the RS Rating
-// Getting ticker and reference ticker daily data
-closeDa = request.security(syminfo.tickerid, 'D', close)
-spxCloseDa = request.security(comparativeTickerId, 'D', close)
-
-// Calculation of the performance from 1 to 4 last quarters
-// Ticker
-perfTicker63 = closeDa / closeDa[n63]
-perfTicker126 = closeDa / closeDa[n126]
-perfTicker189 = closeDa / closeDa[n189]
-perfTicker252 = closeDa / closeDa[n252]
-
-// SP500 of reference ticker
-perfComp63 = spxCloseDa / spxCloseDa[n63]
-perfComp126 = spxCloseDa / spxCloseDa[n126]
-perfComp189 = spxCloseDa / spxCloseDa[n189]
-perfComp252 = spxCloseDa / spxCloseDa[n252]
-
-// Using Formula to calculate a relative score of the ticker and the SP500 with the last quarter weighted double
-float rs_stock = 0.4 * perfTicker63 + 0.2 * perfTicker126 + 0.2 * perfTicker189 + 0.2 * perfTicker252
-float rs_ref = 0.4 * perfComp63 + 0.2 * perfComp126 + 0.2 * perfComp189 + 0.2 * perfComp252
-
-// Calculation of the total relative score or rs performance
-float totalRsScore = rs_stock / rs_ref * 100
-float totalRsRating = -1
-
-// Here we calculated the relative score of the stock. The goal is now to assign the percentile correctly
-// For this I took the curve given by my fork repo of Skyte on Rs Log and tried to calibrate the better possible
-// the output curve of the relative performance of the 6,6xx stocks.
-// Link: https://github.com/Fred6725/rs-log/blob/main/output/rs_stocks.csv
-// Here is the curve in ASCII Art; on the x-axis, the Rs Rating and on the y-axis, the calculated performance.
-
-//                      
-//                                                                                        /                               
-//                                                                                        /                               
-//                                                                                        /                               
-//                                                                                        /                               
-//,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,/,,,,,,,,,,,,,,,,,              
-//                                                                                        /                               
-//                                                                                        /                               
-//                                                                                        /                               
-//                                                                                        /                               
-//                                                                                       |                               
-//                                                                                       /                               
-//                                                                                      ‾                                 
-//                                                                                     ‾                                   
-//                                                                                   -‾                                    
-//                                                                           _____, ‾                                     
-//                                         _____----------------‾‾‾‾‾‾‾‾‾‾‾‾‾                                                   
-//                        __ */‾‾‾‾‾‾‾‾‾‾‾‾                                                                                       
-//             __ ,,----‾‾                                                                                                 
-//          _/                                                                                                           
-//        /                                                                                                               
-//       |                                                                                                     
-// ______|________________ _______________________________ _____________________________________            
-//       |0               |20             |40             |60             |80              |100   
-//
-// I decided to cut this curve in 7 different levels that needs to be entered each day.
-// These are relative strength scores corresponding to percentiles 98, 89, 69, 49, 29, 9 and 1.
-// Finally I used the request.seed() function to auto update these levels automatically on a daily basis.
-// Everything is managed in this repo if you're curious:
-// https://github.com/Fred6725/relative-strength/tree/main    (Fork from Skyte)
-// More precisly in rs_ranking.py for extracting what I needed and in workflows/output.yml for the auto update.
-// The update is done in the private fork of the seed tradingview original repo, checked and synchronised automatically
-// I tried to uplad the full 6,6xx list of relative strength score and rs rating but the display speed was too long.
-
-
-// Use the request.seed() function to access the RS Score environment of all the market
-curveRsPerf = request.seed('seed_fred6725_rs_rating', 'RSRATING', close)
-
-// To prevent loosing data because of week-ends and public holidays I decided to send the value 5 times in a row.
-// Which gives 5*7 = 35 bars. (seed_fred6725_rs_rating:rsrating)
-// Depending of the day we look at the graph we will have a variable amount of bars. 
-// The goal is to get these 7 numbers anyway.
-
-// In case the graph is not updated, we count the number of bars since we have the first data.
-// Calculation of the number of bar since we have the first data
-delta = ta.barssince(na(curveRsPerf) != true)
-
-// Table to store the different values
-var array<float> different_values = array.new_float(7)
-
-// Counter for stored values
-var int counter = 0
-
-// Variable for storage of the environment
-float first = 0
-float scnd = 0
-float thrd = 0
-float frth = 0
-float ffth = 0
-float sxth = 0
-float svth = 0
-
-// Browse seed's values and store the first 7 different values
-if not allowReplay
-    for i = delta to 34 + delta by 1
-        close_value = nz(curveRsPerf[i])
-        if not array.includes(different_values, close_value) and counter < 7 and close_value != 0
-            array.set(different_values, counter, close_value)
-            counter := counter + 1
-            counter
-
-    // Assign stored values to variables
-    first := array.get(different_values, 0)
-    scnd := array.get(different_values, 1)
-    thrd := array.get(different_values, 2)
-    frth := array.get(different_values, 3)
-    ffth := array.get(different_values, 4)
-    sxth := array.get(different_values, 5)
-    svth := array.get(different_values, 6)
-    svth
-
-// Assign fix value for getting an approximation in Replay mode
-if allowReplay
-    first := first2
-    scnd := scnd2
-    thrd := thrd2
-    frth := frth2
-    ffth := ffth2
-    sxth := sxth2
-    svth := svth2
-    svth
-
-// Now that we've recovered the environment, we can assign a percentile using a simple linear approximation of the curve (+ adjustment).
-if totalRsScore >= first
-    totalRsRating := 99
-    totalRsRating
-if totalRsScore <= svth
-    totalRsRating := 1
-    totalRsRating
-
-// Function to attribute the percentile with a simple linear approximation
-f_attributePercentile(totalRsScore, tallerPerf, smallerPerf, rangeUp, rangeDn, weight) =>
-    sum = totalRsScore + (totalRsScore - smallerPerf) * weight // weight is used for manual calibration
-    if sum > tallerPerf - 1
-        sum := tallerPerf - 1
-        sum
-    k1 = smallerPerf / rangeDn
-    k2 = (tallerPerf - 1) / rangeUp
-    k3 = (k1 - k2) / (tallerPerf - 1 - smallerPerf)
-    RsRating = sum / (k1 - k3 * (totalRsScore - smallerPerf))
-    if RsRating > rangeUp
-        RsRating := rangeUp
-        RsRating
-    if RsRating < rangeDn
-        RsRating := rangeDn
-        RsRating
-    RsRating
-
-// Between 199 & 120 the score where approx 98 to 90.
-if totalRsScore < first and totalRsScore >= scnd
-    totalRsRating := f_attributePercentile(totalRsScore, first, scnd, 98, 90, 0.33)
-    totalRsRating
-    // Between 119 and 100 we have scores between 89 and 70.
-if totalRsScore < scnd and totalRsScore >= thrd
-    totalRsRating := f_attributePercentile(totalRsScore, scnd, thrd, 89, 70, 2.1)
-    totalRsRating
-    // Between 100 and 91 we have scores between 69 and 50.
-if totalRsScore < thrd and totalRsScore >= frth
-    totalRsRating := f_attributePercentile(totalRsScore, thrd, frth, 69, 50, 0)
-    totalRsRating
-    // Between 90 and 82 we have scores between 49 and 30.
-if totalRsScore < frth and totalRsScore >= ffth
-    totalRsRating := f_attributePercentile(totalRsScore, frth, ffth, 49, 30, 0)
-    totalRsRating
-    // Between 81 and 56 we have scores between 29 and 10.
-if totalRsScore < ffth and totalRsScore >= sxth
-    totalRsRating := f_attributePercentile(totalRsScore, ffth, sxth, 29, 10, 0)
-    totalRsRating
-    // Between 55 and 28 we have scores between 9 and 2.
-if totalRsScore < sxth and totalRsScore >= svth
-    totalRsRating := f_attributePercentile(totalRsScore, sxth, svth, 9, 2, 0)
-    totalRsRating
-
-// Check if one of this value is empty for replay mode
-for i = 0 to 6 by 1
-    if nz(array.get(different_values, i)) == 0 and not allowReplay
-        totalRsRating := -1
-        totalRsRating
-
-// Display the RS Rating
-// The results can only be used in Daily TimeFrame
-isDaily = timeframe.isdaily
-labelText1 = '                RS Rating'
-labelText2 = ''
-// Here we want to display 'RS' without value if one of the constants is missing
-if isDaily and totalRsRating != -1
-    labelText2 := '\n\n       ' + str.tostring(totalRsRating, '#0')
-    labelText2
-    // Rating Only
-if ratingOnly
-    labelText1 := ''
-    labelText2 := '\n    ' + str.tostring(totalRsRating, '#0')
-    labelText2
-    // Display the labels
-label1 = hideRSRat == false and barstate.islast ? label.new(bar_index, rs, text = labelText1, color = show_rsrating ? na : color.rgb(0, 0, 0, 100), size = size.normal, textcolor = show_rsrating ? na : colorRS, style = label.style_label_center, textalign = text.align_left, yloc = yloc.price) : na
-label2 = hideRSRat == false and barstate.islast ? label.new(bar_index, rs, text = labelText2, color = show_rsrating ? na : color.rgb(0, 0, 0, 100), size = size.large, textcolor = show_rsrating ? na : colorRS, style = label.style_label_center, textalign = text.align_left, yloc = yloc.price) : na
-
-// Delete previous Labels (When new candle opens or when replay mode, the labels were piling on)
-label.delete(label1[1])
-label.delete(label2[1])
+[...]
