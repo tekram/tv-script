@@ -4,8 +4,9 @@
 A comprehensive TradingView Pine Script indicator that provides swing traders with essential market data, technical analysis, and trading signals in an organized dashboard format.
 
 ## Version Information
-- **Current Version**: 2.0 (Optimized)
+- **Current Version**: 2.1 (MA Structure Integration)
 - **Original Credits**: MikeC (first version), Fred6724 (contributions), TheScrutiniser & GlinckEastwoot (ADR% formula)
+- **MA Structure**: Based on BalarezoCapital's original, modified by PrimeTrading
 - **Optimization**: Reduced from 47 to 24 request calls to work within TradingView plan limits
 
 ## Key Features
@@ -22,6 +23,14 @@ A comprehensive TradingView Pine Script indicator that provides swing traders wi
   - Volume Buzz indicators
 
 ### Technical Analysis
+- **MA Structure** (NEW in v2.1):
+  - Adjustable Moving Average structure with High, Close, and Low MAs
+  - Timeframe-aware (Daily/Weekly) with separate length and type settings
+  - Trend-based color coding for center line (Close MA)
+  - Customizable colors for all MA lines
+  - Optional bar coloring based on price position relative to MAs
+  - Gray cloud fill between High and Low MAs
+  - Default display enabled for immediate visibility
 - **EMA Clouds** with trend analysis (5-12, 34-50 EMAs)
 - **VIX Clouds** for market sentiment analysis
 - **Extended EMA/SMA** calculations from key moving averages
@@ -35,12 +44,39 @@ A comprehensive TradingView Pine Script indicator that provides swing traders wi
 - **SPY Analysis** with moving average relationships
 - **Inside Candle** detection (30-min & weekly patterns)
 
+### MA Structure Feature (v2.1)
+
+The MA Structure indicator provides a comprehensive view of price action relative to moving averages:
+
+**Key Features:**
+- **Three MA Lines**: Calculates separate MAs for High, Close, and Low prices
+- **Timeframe Awareness**: Automatically uses Daily settings on daily charts, Weekly settings on weekly charts
+- **Trend Detection**: Center line (Close MA) changes color based on trend direction when all three MAs agree
+- **Visual Cloud**: Gray fill between High and Low MAs for easy structure visualization
+- **Bar Coloring**: Optional feature to color bars based on price position relative to MAs
+
+**Configuration Options:**
+- **Daily/Weekly Settings**: Separate length and type (SMA/EMA) for each timeframe
+- **Color Customization**: 
+  - Custom colors for High, Close (uptrend/downtrend), and Low MAs
+  - Toggle to use custom colors or default gray
+- **Bar Coloring**: Enable/disable bar color changes based on MA structure
+- **Bearish Condition**: Choose between "High below lowest MA" or "Close below all MAs"
+- **Line Size**: Adjustable thickness for all MA lines
+
+**Default Settings:**
+- Daily: 21-period EMA
+- Weekly: 10-period SMA
+- Display: Enabled by default
+- Colors: Custom colors enabled
+
 ### Customization Options
 - Toggle individual dashboard components on/off
 - Adjustable table sizes and colors
 - Configurable EMA/SMA lengths
 - Timeframe-specific settings
 - Display preferences for charts and tables
+- MA Structure customization (colors, lengths, types)
 
 ## Installation & Usage
 
@@ -92,8 +128,22 @@ Use the input settings to customize:
 - Use appropriate timeframes for optimal performance
 - Consider upgrading TradingView plan for additional features
 
+## Version 2.1 Updates
+
+### New Features
+- **MA Structure Integration**: Added adjustable MA structure indicator with High, Close, and Low MAs
+- **Enhanced Color Options**: Customizable colors for all MA lines with toggle option
+- **Default Display**: MA Structure now displays by default for immediate visibility
+- **Improved User Control**: Option to use custom colors or default gray colors
+
+### MA Structure Benefits
+- Provides clear visual structure of price action relative to moving averages
+- Helps identify trend direction through color-coded center line
+- Cloud visualization makes it easy to see price structure boundaries
+- Timeframe-aware settings adapt to your chart timeframe automatically
+
 ## File Structure
-- `main`: Complete optimized Swing Dashboard script
+- `top-right-table`: Complete optimized Swing Dashboard script with MA Structure (v2.1)
 - `bottom-right-table`: Additional table component (see separate documentation)
 
 ## Support

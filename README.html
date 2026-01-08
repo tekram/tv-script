@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swing Dashboard - TradingView Script Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        ul, ol {
+            margin-left: 30px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .version-badge {
+            display: inline-block;
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .feature-box {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .new-feature {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .new-feature::before {
+            content: "NEW ";
+            color: #4caf50;
+            font-weight: bold;
+        }
+        
+        strong {
+            color: #2c3e50;
+        }
+        
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #ecf0f1;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Swing Dashboard - TradingView Script<span class="version-badge">v2.1</span></h1>
+        
+        <h2>Overview</h2>
+        <p>A comprehensive TradingView Pine Script indicator that provides swing traders with essential market data, technical analysis, and trading signals in an organized dashboard format.</p>
+        
+        <h2>Version Information</h2>
+        <ul>
+            <li><strong>Current Version</strong>: 2.1 (MA Structure Integration)</li>
+            <li><strong>Original Credits</strong>: MikeC (first version), Fred6724 (contributions), TheScrutiniser & GlinckEastwoot (ADR% formula)</li>
+            <li><strong>MA Structure</strong>: Based on BalarezoCapital's original, modified by PrimeTrading</li>
+            <li><strong>Optimization</strong>: Reduced from 47 to 24 request calls to work within TradingView plan limits</li>
+        </ul>
+        
+        <h2>Key Features</h2>
+        
+        <h3>Market Data Dashboard</h3>
+        <ul>
+            <li><strong>Market Cap</strong> & <strong>Float %</strong> calculations</li>
+            <li><strong>ADR%</strong> (Average Daily Range percentage) with today's range</li>
+            <li><strong>ATR</strong> (Average True Range) measurements</li>
+            <li><strong>LoD Distance</strong> (Low of Day distance from current price)</li>
+            <li><strong>Volume Analysis</strong>:
+                <ul>
+                    <li>Average Daily Volume & Dollar Volume</li>
+                    <li>Projected Volume calculations</li>
+                    <li>Relative Volume measurements</li>
+                    <li>Volume Buzz indicators</li>
+                </ul>
+            </li>
+        </ul>
+        
+        <div class="new-feature">
+            <h3>MA Structure (NEW in v2.1)</h3>
+            <ul>
+                <li>Adjustable Moving Average structure with High, Close, and Low MAs</li>
+                <li>Timeframe-aware (Daily/Weekly) with separate length and type settings</li>
+                <li>Trend-based color coding for center line (Close MA)</li>
+                <li>Customizable colors for all MA lines</li>
+                <li>Optional bar coloring based on price position relative to MAs</li>
+                <li>Gray cloud fill between High and Low MAs</li>
+                <li>Default display enabled for immediate visibility</li>
+            </ul>
+        </div>
+        
+        <h3>Technical Analysis</h3>
+        <ul>
+            <li><strong>EMA Clouds</strong> with trend analysis (5-12, 34-50 EMAs)</li>
+            <li><strong>VIX Clouds</strong> for market sentiment analysis</li>
+            <li><strong>Extended EMA/SMA</strong> calculations from key moving averages</li>
+            <li><strong>Launch Pad</strong> detection for swing and position trades</li>
+            <li><strong>RSI</strong> integration with EMA analysis</li>
+            <li><strong>Bollinger Bands</strong> (removed in optimization to reduce calls)</li>
+        </ul>
+        
+        <h3>Market Breadth & Sentiment</h3>
+        <ul>
+            <li><strong>Sector</strong> & <strong>Industry Group</strong> display</li>
+            <li><strong>Market Breadth</strong> indicators (% above VWAP, TICK readings)</li>
+            <li><strong>SPY Analysis</strong> with moving average relationships</li>
+            <li><strong>Inside Candle</strong> detection (30-min & weekly patterns)</li>
+        </ul>
+        
+        <div class="feature-box">
+            <h3>MA Structure Feature (v2.1)</h3>
+            <p>The MA Structure indicator provides a comprehensive view of price action relative to moving averages:</p>
+            
+            <p><strong>Key Features:</strong></p>
+            <ul>
+                <li><strong>Three MA Lines</strong>: Calculates separate MAs for High, Close, and Low prices</li>
+                <li><strong>Timeframe Awareness</strong>: Automatically uses Daily settings on daily charts, Weekly settings on weekly charts</li>
+                <li><strong>Trend Detection</strong>: Center line (Close MA) changes color based on trend direction when all three MAs agree</li>
+                <li><strong>Visual Cloud</strong>: Gray fill between High and Low MAs for easy structure visualization</li>
+                <li><strong>Bar Coloring</strong>: Optional feature to color bars based on price position relative to MAs</li>
+            </ul>
+            
+            <p><strong>Configuration Options:</strong></p>
+            <ul>
+                <li><strong>Daily/Weekly Settings</strong>: Separate length and type (SMA/EMA) for each timeframe</li>
+                <li><strong>Color Customization</strong>: 
+                    <ul>
+                        <li>Custom colors for High, Close (uptrend/downtrend), and Low MAs</li>
+                        <li>Toggle to use custom colors or default gray</li>
+                    </ul>
+                </li>
+                <li><strong>Bar Coloring</strong>: Enable/disable bar color changes based on MA structure</li>
+                <li><strong>Bearish Condition</strong>: Choose between "High below lowest MA" or "Close below all MAs"</li>
+                <li><strong>Line Size</strong>: Adjustable thickness for all MA lines</li>
+            </ul>
+            
+            <p><strong>Default Settings:</strong></p>
+            <ul>
+                <li>Daily: 21-period EMA</li>
+                <li>Weekly: 10-period SMA</li>
+                <li>Display: Enabled by default</li>
+                <li>Colors: Custom colors enabled</li>
+            </ul>
+        </div>
+        
+        <h3>Customization Options</h3>
+        <ul>
+            <li>Toggle individual dashboard components on/off</li>
+            <li>Adjustable table sizes and colors</li>
+            <li>Configurable EMA/SMA lengths</li>
+            <li>Timeframe-specific settings</li>
+            <li>Display preferences for charts and tables</li>
+            <li>MA Structure customization (colors, lengths, types)</li>
+        </ul>
+        
+        <h2>Installation & Usage</h2>
+        
+        <h3>Requirements</h3>
+        <ul>
+            <li>TradingView account with Pine Script v6 support</li>
+            <li>Minimum plan supporting 24+ request calls</li>
+        </ul>
+        
+        <h3>How to Install</h3>
+        <ol>
+            <li>Copy the entire script from <code>top-right-table</code> file</li>
+            <li>Open TradingView Pine Editor</li>
+            <li>Paste the script and save</li>
+            <li>Add to any chart as an overlay indicator</li>
+        </ol>
+        
+        <h3>Configuration</h3>
+        <p>Use the input settings to customize:</p>
+        <ul>
+            <li><strong>Dashboard Display</strong>: Toggle individual data sections</li>
+            <li><strong>Technical Indicators</strong>: Enable/disable EMA clouds, RSI, etc.</li>
+            <li><strong>Visual Settings</strong>: Colors, table sizes, positioning</li>
+            <li><strong>Timeframes</strong>: Set analysis periods for various calculations</li>
+            <li><strong>MA Structure Settings</strong>: Configure MA lengths, types, and colors</li>
+        </ul>
+        
+        <h2>Optimization Details (Version 2.0)</h2>
+        
+        <h3>Request Call Reduction</h3>
+        <ul>
+            <li><strong>Original</strong>: 47 unique <code>request.*()</code> calls</li>
+            <li><strong>Optimized</strong>: 24 unique <code>request.*()</code> calls</li>
+            <li><strong>Method</strong>: Consolidated multiple requests into single array-based calls</li>
+        </ul>
+        
+        <h3>Key Optimizations</h3>
+        <ol>
+            <li><strong>Daily Data Consolidation</strong>: Combined ADR, ATR, LoD distance into one request</li>
+            <li><strong>Volume Data Consolidation</strong>: Merged volume, avg volume, close price requests</li>
+            <li><strong>Timeframe Data Consolidation</strong>: Combined 30-min, weekly, and SPY data requests</li>
+            <li><strong>Removed Redundant Features</strong>: Eliminated Bollinger Band calculations (12 calls)</li>
+        </ol>
+        
+        <h3>Maintained Functionality</h3>
+        <ul>
+            <li>All core swing trading analysis features preserved</li>
+            <li>Market breadth indicators intact</li>
+            <li>Technical analysis tools fully functional</li>
+            <li>Customization options unchanged</li>
+        </ul>
+        
+        <h2>Troubleshooting</h2>
+        
+        <h3>Common Issues</h3>
+        <ul>
+            <li><strong>"Too many request calls" error</strong>: Ensure you're using Version 2.1</li>
+            <li><strong>Compilation errors</strong>: Check for proper syntax in Pine Editor</li>
+            <li><strong>Missing data</strong>: Verify symbol has sufficient historical data</li>
+        </ul>
+        
+        <h3>Performance Tips</h3>
+        <ul>
+            <li>Disable unused dashboard components for faster loading</li>
+            <li>Use appropriate timeframes for optimal performance</li>
+            <li>Consider upgrading TradingView plan for additional features</li>
+        </ul>
+        
+        <div class="new-feature">
+            <h2>Version 2.1 Updates</h2>
+            
+            <h3>New Features</h3>
+            <ul>
+                <li><strong>MA Structure Integration</strong>: Added adjustable MA structure indicator with High, Close, and Low MAs</li>
+                <li><strong>Enhanced Color Options</strong>: Customizable colors for all MA lines with toggle option</li>
+                <li><strong>Default Display</strong>: MA Structure now displays by default for immediate visibility</li>
+                <li><strong>Improved User Control</strong>: Option to use custom colors or default gray colors</li>
+            </ul>
+            
+            <h3>MA Structure Benefits</h3>
+            <ul>
+                <li>Provides clear visual structure of price action relative to moving averages</li>
+                <li>Helps identify trend direction through color-coded center line</li>
+                <li>Cloud visualization makes it easy to see price structure boundaries</li>
+                <li>Timeframe-aware settings adapt to your chart timeframe automatically</li>
+            </ul>
+        </div>
+        
+        <h2>File Structure</h2>
+        <ul>
+            <li><code>top-right-table</code>: Complete optimized Swing Dashboard script with MA Structure (v2.1)</li>
+            <li><code>bottom-right-table</code>: Additional table component (see separate documentation)</li>
+        </ul>
+        
+        <h2>Support</h2>
+        <p>For issues specific to the optimization, refer to the version comments in the script header. For original functionality questions, consult the credit sources mentioned above.</p>
+        
+        <div class="footer">
+            <h2>License</h2>
+            <p>Mozilla Public License 2.0 - See script header for full license terms.</p>
+            <p style="margin-top: 20px;"><em>This HTML version is generated from the README.md file. For the latest updates, check the GitHub repository.</em></p>
+        </div>
+    </div>
+</body>
+</html>
+

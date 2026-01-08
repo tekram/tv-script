@@ -9,7 +9,8 @@ Welcome to the comprehensive documentation for the TradingView Pine Script indic
 - **[Swing Dashboard - Main Script](README.md)**
   - Complete TradingView Pine Script indicator for swing traders
   - Market data dashboard with technical analysis
-  - Version 2.0 optimized for TradingView plan limits
+  - Version 2.1 with MA Structure integration
+  - Optimized for TradingView plan limits (24 request calls)
 
 - **[Bottom Right Table - EMA Cloud Component](bottom-right-table-README.md)**
   - Standalone EMA cloud analysis component
@@ -27,6 +28,7 @@ Welcome to the comprehensive documentation for the TradingView Pine Script indic
 - Market cap & float calculations
 - ADR% and ATR measurements
 - Volume analysis with relative volume
+- **MA Structure** (NEW v2.1): High/Close/Low MAs with trend-based coloring
 - EMA clouds (5-12, 34-50)
 - VIX clouds for sentiment
 - Market breadth indicators

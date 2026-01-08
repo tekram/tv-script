@@ -53,6 +53,24 @@ show_rsrating = input(true, title = 'Hide RS Rating')
 show_4_ema = input(false, title = 'Show 4 EMA on Chart (red line)')
 show_bb_dots = input(false, title = 'Show 30m and 1hr BB dots')
 
+// === ADJUSTABLE MA STRUCTURE SETTINGS ===
+show_ma_structure = input.bool(true, title = 'Show MA Structure', group = 'MA Structure Settings')
+ma_structure_daily_length = input.int(21, title = 'Daily MA Length', minval = 1, group = 'MA Structure Settings')
+ma_structure_daily_type = input.string('EMA', title = 'Daily MA Type', options = ['SMA', 'EMA'], group = 'MA Structure Settings')
+ma_structure_weekly_length = input.int(10, title = 'Weekly MA Length', minval = 1, group = 'MA Structure Settings')
+ma_structure_weekly_type = input.string('SMA', title = 'Weekly MA Type', options = ['SMA', 'EMA'], group = 'MA Structure Settings')
+ma_structure_change_bar_color = input.bool(false, title = 'Change Bar Color', group = 'MA Structure Settings')
+ma_structure_use_high_below = input.bool(true, title = 'Use High Below Structure for Bearish', tooltip = 'When enabled, bars turn bearish when HIGH is below the lowest MA. When disabled, only uses close below all MAs.', group = 'MA Structure Settings')
+ma_structure_line_size = input.int(1, title = 'Line Size', minval = 1, group = 'MA Structure Settings')
+ma_structure_use_custom_colors = input.bool(true, title = 'Use Custom Colors', tooltip = 'When enabled, uses custom colors for MA lines. When disabled, uses default gray colors.', group = 'MA Structure Settings')
+ma_structure_high_color = input.color(color.gray, title = 'High MA Color', group = 'MA Structure Settings')
+ma_structure_close_color_up = input.color(color.rgb(197, 197, 197), title = 'Close MA Uptrend Color', group = 'MA Structure Settings')
+ma_structure_close_color_down = input.color(color.rgb(255, 0, 255), title = 'Close MA Downtrend Color', group = 'MA Structure Settings')
+ma_structure_low_color = input.color(color.gray, title = 'Low MA Color', group = 'MA Structure Settings')
+ma_structure_bullish_color = input.color(color.rgb(0, 0, 0), title = 'Bullish Candle Color', group = 'MA Structure Settings')
+ma_structure_bearish_color = input.color(color.rgb(255, 0, 255), title = 'Bearish Candle Color', group = 'MA Structure Settings')
+ma_structure_cloud_color = input.color(color.rgb(120, 123, 134, 64), title = 'Cloud Color', group = 'MA Structure Settings')
+
 
 arp = 100 * (ta.sma(high / low, adrp_len) - 1)
 [adrp, atr, lod_dist] = request.security(syminfo.tickerid, 'D', [arp, ta.atr(atr_len), 100 * (close - low) / ta.atr(atr_len)])
@@ -183,6 +201,69 @@ market_cap = request.financial(syminfo.tickerid, 'MARKET_CAP', 'FQ')
 // multiple = market_cap / EBITDA
 
 // "TTM", "FY", "FQ", "FH", "D".
+
+// === ADJUSTABLE MA STRUCTURE CALCULATIONS ===
+// Function to calculate MA
+getMaStructure(src, length, maType) =>
+    switch maType
+        'SMA' => ta.sma(src, length)
+        'EMA' => ta.ema(src, length)
+        => ta.ema(src, length) // default to EMA
+
+// Determine current timeframe
+isDailyTF = timeframe.isdaily
+isWeeklyTF = timeframe.isweekly
+
+// Select MA parameters based on timeframe
+maStructureLength = isWeeklyTF ? ma_structure_weekly_length : ma_structure_daily_length
+maStructureType = isWeeklyTF ? ma_structure_weekly_type : ma_structure_daily_type
+
+// MA calculations
+maStructureHigh = show_ma_structure ? getMaStructure(high, maStructureLength, maStructureType) : na
+maStructureClose = show_ma_structure ? getMaStructure(close, maStructureLength, maStructureType) : na
+maStructureLow = show_ma_structure ? getMaStructure(low, maStructureLength, maStructureType) : na
+
+// Trend direction (all 3 MAs must agree)
+isRisingMA = show_ma_structure and maStructureHigh > maStructureHigh[1] and maStructureClose > maStructureClose[1] and maStructureLow > maStructureLow[1]
+isFallingMA = show_ma_structure and maStructureHigh < maStructureHigh[1] and maStructureClose < maStructureClose[1] and maStructureLow < maStructureLow[1]
+
+// Trend color memory for center line
+var color maStructureCloseColor = na
+if show_ma_structure
+    if ma_structure_use_custom_colors
+        if isRisingMA
+            maStructureCloseColor := ma_structure_close_color_up
+        else if isFallingMA
+            maStructureCloseColor := ma_structure_close_color_down
+        else
+            maStructureCloseColor := nz(maStructureCloseColor[1], ma_structure_close_color_up)
+    else
+        maStructureCloseColor := color.gray
+
+// Modified bar color logic
+bearishConditionMA = show_ma_structure and (ma_structure_use_high_below ? high < maStructureLow : close < maStructureLow and close < maStructureClose and close < maStructureHigh)
+
+var color barColorBasedOnMATrend = na
+if show_ma_structure
+    if close > maStructureHigh and close > maStructureClose and close > maStructureLow
+        barColorBasedOnMATrend := ma_structure_bullish_color
+    else if bearishConditionMA
+        barColorBasedOnMATrend := ma_structure_bearish_color
+    else
+        barColorBasedOnMATrend := nz(barColorBasedOnMATrend[1], color.gray)
+
+// Plot MAs
+maHighColor = ma_structure_use_custom_colors ? ma_structure_high_color : color.gray
+maLowColor = ma_structure_use_custom_colors ? ma_structure_low_color : color.gray
+pMAHigh = plot(show_ma_structure ? maStructureHigh : na, title = 'MA Structure High', color = maHighColor, linewidth = ma_structure_line_size)
+pMAClose = plot(show_ma_structure ? maStructureClose : na, title = 'MA Structure Close', color = maStructureCloseColor, linewidth = ma_structure_line_size)
+pMALow = plot(show_ma_structure ? maStructureLow : na, title = 'MA Structure Low', color = maLowColor, linewidth = ma_structure_line_size)
+
+// Always-gray cloud
+fill(pMAHigh, pMALow, color = show_ma_structure ? ma_structure_cloud_color : na, title = 'MA Structure Cloud')
+
+// Apply bar color
+barcolor(show_ma_structure and ma_structure_change_bar_color ? barColorBasedOnMATrend : na)
 
 // Intraday Cloud
 
