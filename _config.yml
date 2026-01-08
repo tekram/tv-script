@@ -12,9 +12,6 @@ plugins:
   - jekyll-sitemap
   - jekyll-seo-tag
 
-# Source directory for GitHub Pages
-source: docs
-
 # Navigation
 nav:
   - Home: "index.md"
