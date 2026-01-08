@@ -2,6 +2,8 @@
 
 This repository contains TradingView Pine Script indicators for swing trading analysis.
 
+🌐 **[View Live Documentation on GitHub Pages](https://tekram.github.io/tv-script/)**
+
 ## Scripts
 
 - **`top-right-table`** - Main Swing Dashboard script (all components)
@@ -11,7 +13,7 @@ This repository contains TradingView Pine Script indicators for swing trading an
 
 All documentation is located in the [`docs/`](docs/) folder.
 
-👉 **[View Full Documentation](docs/index.md)**
+👉 **[View Full Documentation on GitHub Pages](https://tekram.github.io/tv-script/)** | [Local Documentation](docs/index.md)
 
 ## Quick Start
 
