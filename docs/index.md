@@ -149,20 +149,25 @@ The Swing Dashboard is a **mashup** of multiple trading components. Click any co
 tv-script/
 ├── top-right-table              # Main script (all components)
 ├── bottom-right-table           # Standalone EMA Clouds component
-├── index.md                     # This file (main documentation)
-├── README.md                    # Detailed documentation
-├── 21ema-structure.md          # 21 EMA Structure guide
-├── top-right-table-dashboard.md # Market Data Dashboard guide
-├── bottom-right-table-README.md # EMA Clouds & Breadth guide
-├── ripster-ema-clouds.md       # Ripster EMA Clouds guide
-├── rs-rating-system.md         # RS Rating guide
-├── pivot-points.md             # Pivot Points guide
-├── rmv-indicator.md            # RMV Indicator guide
-├── launch-pad-detection.md     # Launch Pad guide
-├── inside-candle-patterns.md   # Inside Candle guide
-├── bollinger-bands.md          # Bollinger Bands guide
-├── extended-ema-analysis.md    # Extended EMA guide
-└── floating-labels.md          # Floating Labels guide
+├── README.md                    # Root README (points to docs)
+└── docs/                        # Documentation folder
+    ├── _config.yml              # Jekyll config for GitHub Pages
+    ├── index.md                 # Main documentation page
+    ├── README.md                # Detailed documentation
+    ├── README.html              # HTML version of README
+    ├── 21ema-structure.md       # 21 EMA Structure guide
+    ├── top-right-table-dashboard.md # Market Data Dashboard guide
+    ├── bottom-right-table-README.md # EMA Clouds & Breadth guide
+    ├── ripster-ema-clouds.md    # Ripster EMA Clouds guide
+    ├── rs-rating-system.md      # RS Rating guide
+    ├── pivot-points.md          # Pivot Points guide
+    ├── rmv-indicator.md         # RMV Indicator guide
+    ├── launch-pad-detection.md  # Launch Pad guide
+    ├── inside-candle-patterns.md # Inside Candle guide
+    ├── bollinger-bands.md       # Bollinger Bands guide
+    ├── extended-ema-analysis.md # Extended EMA guide
+    ├── floating-labels.md       # Floating Labels guide
+    └── TRADING_INSTRUCTIONS.md  # Trading instructions
 ```
 
 ---
