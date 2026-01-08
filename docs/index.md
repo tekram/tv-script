@@ -2,6 +2,10 @@
 
 > A comprehensive TradingView Pine Script indicator combining multiple trading tools into one powerful dashboard for swing traders.
 
+![Swing Dashboard Overview](images/overview.jpg)
+
+*Complete overview of the Swing Dashboard showing all components and features*
+
 ---
 
 ## 🚀 Quick Start
