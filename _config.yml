@@ -16,8 +16,24 @@ plugins:
 nav:
   - Home: "index.md"
   - README: "README.md"
-  - Trading Instructions: "TRADING_INSTRUCTIONS.md"
+  - "---"
+  - "Core Components:"
+  - 21 EMA Structure: "21ema-structure.md"
+  - Top Right Table: "top-right-table-dashboard.md"
   - Bottom Right Table: "bottom-right-table-README.md"
+  - "---"
+  - "Additional Features:"
+  - Ripster EMA Clouds: "ripster-ema-clouds.md"
+  - RS Rating System: "rs-rating-system.md"
+  - Pivot Points: "pivot-points.md"
+  - RMV Indicator: "rmv-indicator.md"
+  - Launch Pad Detection: "launch-pad-detection.md"
+  - Inside Candle Patterns: "inside-candle-patterns.md"
+  - Bollinger Bands: "bollinger-bands.md"
+  - Extended EMA Analysis: "extended-ema-analysis.md"
+  - Floating Labels: "floating-labels.md"
+  - "---"
+  - Trading Instructions: "TRADING_INSTRUCTIONS.md"
 
 # Collections for better organization
 collections:

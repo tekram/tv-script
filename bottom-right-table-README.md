@@ -1,105 +1,189 @@
-# Bottom Right Table - EMA Cloud Component
+# Bottom Right Table - EMA Clouds & Market Breadth
 
 ## Overview
-A specialized TradingView Pine Script component that creates EMA cloud analysis for intraday trading signals. This file contains the logic for the bottom-right table display showing trend cloud indicators.
+The Bottom Right Table provides comprehensive market timing and breadth analysis through EMA cloud indicators, VIX sentiment analysis, and SPY market condition assessment. This component helps traders determine:
+- **Stock trend direction** (via EMA clouds)
+- **Market sentiment** (via VIX clouds)
+- **Market breadth extremes** (via breadth indicators)
+- **Optimal trade timeframes** (via SPY analysis)
 
-## Purpose
-This script is a modular component extracted from the main Swing Dashboard that focuses specifically on:
-- **Intraday EMA Clouds** for trend analysis
-- **VIX EMA Clouds** for market sentiment
-- **Bottom-right table positioning** for chart display
+## Table Layout
 
-## Key Features
+### Top Section: EMA Clouds (Left) & VIX Clouds (Right)
 
-### Intraday EMA Clouds
-- **10-minute timeframe** analysis
-- **5-12 EMA Cloud**: Short-term trend direction
-- **34-50 EMA Cloud**: Medium-term trend direction
-- **Color-coded signals**: Green for bullish, red for bearish
+#### Stock EMA Clouds (Left Side)
+These clouds analyze the **stock's own trend** using a **10-minute timeframe**:
 
-### VIX EMA Clouds
-- **VIX sentiment analysis** using same EMA structure
-- **Market fear/greed indicators**
-- **Contrarian signals** for market timing
+- **5-12 Cloud**: Short-term trend direction
+  - **Bullish**: 5 EMA > 12 EMA (green background)
+  - **Bearish**: 5 EMA < 12 EMA (red background)
+  
+- **34-50 Cloud**: Medium-term trend direction
+  - **Bullish**: 34 EMA > 50 EMA (green background)
+  - **Bearish**: 34 EMA < 50 EMA (red background)
 
-### Visual Indicators
-- **Bullish/Bearish labels** for each cloud
-- **Color-coded backgrounds** for quick visual reference
-- **Table positioning** in bottom-right of chart
+**Usage**: 
+- Both clouds bullish = strong uptrend
+- Both clouds bearish = strong downtrend
+- Mixed signals = choppy/transitional market
+
+#### VIX EMA Clouds (Right Side)
+These clouds analyze **market sentiment** using VIX on a **10-minute timeframe**:
+
+- **VIX 5-12 Cloud**: Short-term fear/greed indicator
+- **VIX 34-50 Cloud**: Medium-term fear/greed indicator
+
+**Usage**:
+- VIX clouds bullish (VIX rising) = Market fear increasing (contrarian bullish signal)
+- VIX clouds bearish (VIX falling) = Market complacency (contrarian bearish signal)
+- Use as contrarian indicator for market timing
+
+### Bottom Section: Market Breadth & SPY Analysis
+
+#### Market Breadth Indicators (Bottom Left)
+Helps identify **market breadth extremes** for both short-term and mid-term analysis:
+
+- **5% Breadth**: Percentage of stocks above their 5-day SMA
+  - **GO (< 20)**: Oversold condition - good entry opportunity (green)
+  - **Warning (> 75)**: Overbought condition - caution (red)
+  - **Neutral**: Normal breadth conditions (purple)
+  
+- **20% Breadth**: Percentage of stocks above their 20-day SMA
+  - **GO (< 30)**: Oversold condition - good entry opportunity (green)
+  - **Warning (> 75)**: Overbought condition - caution (red)
+  - **Neutral**: Normal breadth conditions (purple)
+
+**Usage**:
+- **Extreme Oversold**: Both breadth indicators in GO zone = potential market bottom
+- **Extreme Overbought**: Both breadth indicators in Warning zone = potential market top
+- **Divergences**: Stock making new highs while breadth declining = weakening market
+
+#### SPY Market Condition (Bottom Right)
+Helps determine **optimal trade timeframe** based on SPY's position relative to key moving averages:
+
+**Trade Condition Display**:
+- **Market Above 20 & 50 Day**: 
+  - **Trade Type**: Swings → Position Trades
+  - **Timeframe**: Longer holds (5-8+ days)
+  - **Color**: Green
+  
+- **Market Above 50 Day**:
+  - **Trade Type**: Swing trades
+  - **Timeframe**: 5-8 day holds
+  - **Color**: Green
+  
+- **Above 20 Below 50 Day**:
+  - **Trade Type**: Short Swings
+  - **Timeframe**: 1-2 day holds
+  - **Color**: Red
+  
+- **Market Below 50 Day**:
+  - **Trade Type**: Short Swings
+  - **Timeframe**: 1-2 day holds
+  - **Color**: Red
+
+**Days SPY > 20 EMA**: 
+- Shows consecutive days SPY has closed above its 20 EMA
+- Higher count = stronger trend
+- Resets to 0 when SPY closes below 20 EMA
+
+**Days Since Low < EMA**:
+- Tracks days since SPY's low was below its 20 EMA
+- Helps identify recent pullback/retest patterns
 
 ## Technical Details
 
-### EMA Calculations
+### EMA Cloud Calculations
 ```pinescript
-// 10-minute timeframe EMAs
+// Stock EMAs on 10-minute timeframe
 [ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, '10', 
+    [ta.ema(close, 5), ta.ema(close, 12), ta.ema(close, 34), ta.ema(close, 50)])
+
+// VIX EMAs on 10-minute timeframe
+[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', '10', 
     [ta.ema(close, 5), ta.ema(close, 12), ta.ema(close, 34), ta.ema(close, 50)])
 ```
 
-### Signal Logic
-- **Short Cloud**: 5 EMA > 12 EMA = Bullish
-- **Long Cloud**: 34 EMA > 50 EMA = Bullish
-- **Opposite conditions** = Bearish
-
-### Request Calls
-- **2 total request calls**:
-  1. Main symbol EMAs (4 values in single call)
-  2. VIX EMAs (4 values in single call)
-
-## Integration
-
-### As Standalone Component
-Use this script independently for focused EMA cloud analysis without the full dashboard complexity.
-
-### With Main Dashboard
-This component is integrated into the main Swing Dashboard script. The table positioning and logic are combined with other dashboard elements.
-
-### Customization Options
-- **EMA Lengths**: Adjustable for different trading styles
-- **Timeframe**: Can be modified from 10-minute default
-- **Colors**: Customizable for chart preferences
-
-## Usage Instructions
-
-### Installation
-1. Copy the script to TradingView Pine Editor
-2. Add as overlay indicator to any chart
-3. Adjust input parameters as needed
-
-### Interpretation
-- **Green Clouds**: Bullish momentum
-- **Red Clouds**: Bearish momentum
-- **VIX Analysis**: Contrarian sentiment indicator
-- **Combined Signals**: Strong trend confirmation when both clouds align
-
-## Performance Benefits
-- **Low request count** (2 calls) - efficient for all TradingView plans
-- **Fast execution** - minimal calculations
-- **Clean display** - focused information without clutter
-
-## File Relationship
-- **Main Dashboard**: Full-featured script with this component integrated
-- **Bottom-Right Table**: Standalone version for focused EMA analysis
-- **Modular Design**: Can be extracted and used independently
-
-## Customization Examples
-
-### Different Timeframes
+### Market Breadth Calculations
 ```pinescript
-timeframe = '15'  // Change to 15-minute
-timeframe = '5'   // Change to 5-minute
+// Percentage above 5-day SMA
+percent_above_5 = request.security('NDFD', '1D', close)
+
+// Percentage above 20-day SMA
+percent_above_20 = request.security('S5TW', '1D', close)
 ```
 
-### Alternative EMA Lengths
+### SPY Analysis
 ```pinescript
-ema5_length = input.int(8, title = 'Length for 8 EMA')
-ema12_length = input.int(21, title = 'Length for 21 EMA')
+// SPY daily close and MAs
+spy = request.security('SPY', 'D', close)
+ma50 = ta.sma(spy, 50)
+ma20 = ta.ema(spy, 20)
+
+// Conditions
+above_50_and_20 = spy > ma50 and spy > ma20
+above_50 = spy > ma50
+above_20 = spy > ma20
+below_50 = spy < ma50
 ```
 
-## Limitations
-- Designed for intraday analysis
-- Requires sufficient volume for accurate EMA calculations
-- VIX data availability may vary by broker/data plan
+## Trading Applications
 
-## Support
-This is a modular component of the larger Swing Dashboard system. For comprehensive support, refer to the main dashboard documentation.
+### Entry Timing
+1. **Check Stock Clouds**: Both 5-12 and 34-50 bullish = favorable trend
+2. **Check VIX Clouds**: Rising VIX (bullish clouds) = contrarian bullish signal
+3. **Check Breadth**: Oversold breadth (< 20% on 5-day, < 30% on 20-day) = good entry
+4. **Check SPY Condition**: Above 20 & 50 = longer holds possible
+
+### Position Sizing
+- **Strong Alignment**: All indicators bullish + SPY above both MAs = larger size
+- **Mixed Signals**: Conflicting clouds or SPY below 50 = smaller size
+- **Extreme Breadth**: Oversold breadth = potential for larger moves
+
+### Trade Timeframe Selection
+- **SPY Above 20 & 50**: Position trades (5-8+ days)
+- **SPY Above 50 Only**: Swing trades (5-8 days)
+- **SPY Below 50**: Short swings (1-2 days) or cash
+
+### Risk Management
+- **Cloud Reversals**: Stock clouds turn bearish = reduce exposure
+- **Breadth Warnings**: Breadth > 75% = overbought, trim positions
+- **SPY Breakdown**: SPY breaks below 50 SMA = defensive mode
+
+## Best Practices
+
+1. **Wait for Alignment**: Best setups when stock clouds, breadth, and SPY all align
+2. **Use VIX as Contrarian**: Rising VIX (bullish clouds) often precedes market bottoms
+3. **Monitor Breadth Extremes**: Oversold breadth + bullish clouds = high probability setup
+4. **Respect SPY Condition**: Don't fight the market - adjust timeframe based on SPY position
+5. **Track Days Above EMA**: Longer streaks = stronger trends = larger position sizes
+
+## Configuration Options
+
+### Display Toggles
+- **Show Clouds**: Enable/disable the entire cloud table
+- **Show Trend Labels**: Show/hide the EMA cloud labels
+- **Show Market Breadth**: Show/hide breadth indicators (requires `show_clouds` enabled)
+
+### EMA Lengths
+- **Length for 5 EMA**: Default 5
+- **Length for 12 EMA**: Default 12
+- **Length for 34 EMA**: Default 34
+- **Length for 50 EMA**: Default 50
+
+### Visual Settings
+- **Table Size**: Tiny, Small, Normal, or Large
+- **Background Color**: Customizable table background
+- **Text Color**: Customizable text color
+
+## Request Call Efficiency
+- **Total Calls**: 2 request calls
+  1. Stock EMAs (4 values consolidated)
+  2. VIX EMAs (4 values consolidated)
+- **Breadth Data**: Uses TradingView custom symbols (NDFD, S5TW)
+- **SPY Data**: Single daily request for SPY analysis
+
+## Related Documentation
+- [Main Dashboard Documentation](README.md)
+- [21 EMA Structure Indicator](21ema-structure.md)
+- [Top Right Table - Market Data Dashboard](top-right-table-dashboard.md)
