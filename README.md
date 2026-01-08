@@ -7,6 +7,7 @@ A comprehensive TradingView Pine Script indicator that provides swing traders wi
 - **Current Version**: 2.1 (MA Structure Integration)
 - **Original Credits**: MikeC (first version), Fred6724 (contributions), TheScrutiniser & GlinckEastwoot (ADR% formula)
 - **MA Structure**: Based on BalarezoCapital's original, modified by PrimeTrading
+- **21EMA Structure Concept**: Inspired by [Alex's Swing Trading System](https://traderslab.gitbook.io/primetrading) from PrimeTrading Academy
 - **Optimization**: Reduced from 47 to 24 request calls to work within TradingView plan limits
 
 ## Key Features
@@ -46,7 +47,7 @@ A comprehensive TradingView Pine Script indicator that provides swing traders wi
 
 ### MA Structure Feature (v2.1)
 
-The MA Structure indicator provides a comprehensive view of price action relative to moving averages:
+The MA Structure indicator provides a comprehensive view of price action relative to moving averages. This concept is inspired by [Alex's Swing Trading System](https://traderslab.gitbook.io/primetrading) from PrimeTrading Academy, which emphasizes trading pullbacks to the 21-day moving average structure.
 
 **Key Features:**
 - **Three MA Lines**: Calculates separate MAs for High, Close, and Low prices
@@ -146,8 +147,23 @@ Use the input settings to customize:
 - `top-right-table`: Complete optimized Swing Dashboard script with MA Structure (v2.1)
 - `bottom-right-table`: Additional table component (see separate documentation)
 
+## Credits & Acknowledgments
+
+### Original Script Credits
+- **MikeC**: First version of the Swing Dashboard
+- **Fred6724**: Contributions and updates
+- **TheScrutiniser & GlinckEastwoot**: ADR% formula
+- **Ripster47**: Original EMA Clouds + RSI script source
+
+### MA Structure Credits
+- **BalarezoCapital**: Original MA Structure concept
+- **PrimeTrading**: Modifications and enhancements
+- **Alex's Swing Trading System**: [PrimeTrading Academy](https://traderslab.gitbook.io/primetrading) - Inspiration for the 21EMA structure trading methodology
+
+The MA Structure feature integrates concepts from Alex's comprehensive swing trading system, which focuses on trading pullbacks to structure (21-day moving average) and emphasizes market timing, relative strength, and disciplined position management.
+
 ## Support
-For issues specific to the optimization, refer to the version comments in the script header. For original functionality questions, consult the credit sources mentioned above.
+For issues specific to the optimization, refer to the version comments in the script header. For original functionality questions, consult the credit sources mentioned above. For more information on the 21EMA structure trading methodology, visit [PrimeTrading Academy](https://traderslab.gitbook.io/primetrading).
 
 ## License
 Mozilla Public License 2.0 - See script header for full license terms.
