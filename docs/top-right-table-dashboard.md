@@ -3,6 +3,10 @@
 ## Overview
 The Top Right Table is the primary data dashboard displayed in the top-right corner of your TradingView chart. It provides comprehensive market data, volume analysis, extended EMA/SMA measurements, and fundamental information to help swing traders make informed decisions.
 
+![Top Right Table Dashboard](images/top-right-table.jpg)
+
+*Example of the Top Right Table showing market data, volume analysis, extended EMAs, and sector information*
+
 ## Components
 
 ### Market Data Metrics
@@ -82,6 +86,10 @@ The Extended section shows how far price has extended from key moving averages, 
 - **Inside Candle**: Detects inside candle patterns on specified timeframe (default: 30-min)
 - **Purpose**: Identifies consolidation patterns that often precede breakouts
 - **Color Coding**: Purple background when detected
+
+![Top Right Table with Inside Week Detection](images/top-right-table-wiht-inside-week.jpg)
+
+*Example showing the Top Right Table with Inside Week pattern detected (purple background highlight)*
 
 ## Configuration Options
 

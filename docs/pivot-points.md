@@ -3,6 +3,10 @@
 ## Overview
 The Pivot Points system calculates and displays standard pivot point levels based on the previous day's high, low, and close prices. These levels act as dynamic support and resistance zones for intraday trading.
 
+![Hourly Chart with Daily Pivots and Bollinger Bands](images/hourly-chart-with-daily-pivots-and-bollingerbands.jpg)
+
+*Example of pivot points displayed on an hourly chart showing R1, Pivot, S1, and S2 levels as support/resistance zones*
+
 ## Pivot Levels
 
 ### Standard Pivot

@@ -3,6 +3,10 @@
 ## Overview
 The 21 EMA Structure is a powerful moving average indicator that provides a comprehensive view of price action relative to moving averages. This feature calculates separate moving averages for High, Close, and Low prices, creating a visual "structure" that helps identify trend direction and key support/resistance levels.
 
+![21 EMA Structure Indicator](images/21-EMA-structure.jpg)
+
+*Example of the 21 EMA Structure showing High, Close, and Low moving averages with trend-based color coding*
+
 ## Concept Origin
 This indicator is inspired by [Alex's Swing Trading System](https://traderslab.gitbook.io/primetrading) from PrimeTrading Academy, which emphasizes trading pullbacks to the 21-day moving average structure. The methodology focuses on:
 - Market timing

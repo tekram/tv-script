@@ -7,6 +7,10 @@ The Bottom Right Table provides comprehensive market timing and breadth analysis
 - **Market breadth extremes** (via breadth indicators)
 - **Optimal trade timeframes** (via SPY analysis)
 
+![Bottom Right Table Dashboard](images/bottom-right-table-dashboard.jpg)
+
+*Example of the Bottom Right Table showing EMA clouds, VIX clouds, market breadth indicators, and SPY analysis*
+
 ## Table Layout
 
 ### Top Section: EMA Clouds (Left) & VIX Clouds (Right)
