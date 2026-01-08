@@ -10,12 +10,34 @@
 
 ## 🚀 Quick Start
 
-1. **Copy** the script from `top-right-table`
+1. **Copy** the script from `top-right-table` (includes all chart indicators + tables)
 2. **Paste** into TradingView Pine Editor
 3. **Add** to your chart as an overlay indicator
 4. **Customize** using the input settings
 
+> **Note**: All chart indicators (21 EMA Structure, RS Rating, Pivot Points, RMV, etc.) come with the `top-right-table` script. The `bottom-right-table` is a separate standalone script that only includes the EMA Clouds & Market Breadth table.
+
 **Current Version**: 2.1 | **Pine Script**: v6 | **Request Calls**: 24 (optimized)
+
+---
+
+## 📦 Scripts Overview
+
+### `top-right-table` - Main Script (All Components)
+The **`top-right-table`** script includes:
+- ✅ **All chart indicators**: 21 EMA Structure, Ripster EMA Clouds, RS Rating, Pivot Points, RMV, Bollinger Bands, Floating Labels
+- ✅ **Top-right table dashboard**: Market data, volume analysis, extended EMAs, sector information
+- ✅ **Bottom-right table**: EMA Clouds & Market Breadth (when enabled)
+
+**This is the complete script** - copy this one to get everything!
+
+### `bottom-right-table` - Standalone Component
+The **`bottom-right-table`** script is a **separate standalone script** that includes:
+- ✅ **Bottom-right table only**: EMA Clouds & Market Breadth indicators
+- ❌ **No chart indicators**: Does not include MA Structure, RS Rating, Pivot Points, etc.
+- ❌ **No top-right table**: Does not include the market data dashboard
+
+**Use this only if** you want just the EMA Clouds & Market Breadth table without any other features.
 
 ---
 
