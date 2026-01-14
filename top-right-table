@@ -15,45 +15,112 @@
 //@version=6
 indicator(title = 'Swing Dashboard', shorttitle = 'Swing Data', overlay = true)
 
-cleanup = input(true, title = 'Remove Extra Stuff')
-remove_floats = input(false, title='Remove Right Sided Floating Prices')
-hide_clouds = input(false, title="Hide Cloud Fill")
-float_offset = input(15, title='Right sided floats offset in number of bars')
-show_longer_ma = input(false, title = 'Show Longer MAs')
-show_mktCap = input(false, title = 'Show Market Cap')
-show_floatpercent = input(false, title = 'Show Float%')
-show_adrp = input(true, title = 'Show ADR%')
-show_atr = input(false, title = 'Show ATR')
-show_lod_dist = input(true, title = 'Show LoD dist.')
-show_ADVS = input(false, title = 'Show Avg Daily $ Volume')
-show_ADV = input(true, title = 'Show Avg Daily Volume')
-show_projectedVol = input(true, title = 'Show Projected Volumes')
-show_relVol = input(true, title = 'Show Relative Volume')
-show_volBuzz = input(false, title = 'Show Vol. Buzz')
-show_sector = input(true, title = 'Show Sector')
-show_ind = input(true, title = 'Show Ind. Grp')
-show_extended = input(false, title = 'Show Extended')
-show_launch_pad = input(false, title = 'Show Launch Pad')
-show_market_breadth = input(false, title = 'Show Market Breadth')
-show_clouds = input(true, title = 'Show Clouds')
-show_trend_cloud_labels = input.bool(true, title = 'Show Trend Labels')
-show_three_ema = input(false, title = 'Show 3 EMA + RSI / 4 EMA')
-show_30_min = input(true, title = 'Show 30 Min')
-show_fundamentals = input(false, title = 'Show Fundamentals')
-adrp_len = input(20, title = 'ADR% Length', tooltip = 'The number of daily bars used in the calculation of the ADR%')
-atr_len = input(14, title = 'ATR Length', tooltip = 'The number of daily bars used in the calculation of the ATR')
-len = input(50, 'Volume MA Length', tooltip = 'The number of daily bars back for the MA calculation of the volume')
-extended_ema_input = input(20, 'EMA', tooltip = 'Which EMA do you want to see extension from')
-extended_sma_input = input(50, 'SMA', tooltip = 'Which SMA do you want to see extension from')
-tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large])
-bg_col = input(#00000000, title = 'Background Color')
-txt_col = input(color.rgb(0, 0, 0), title = 'Text Color')
-show_empty_row = input(true, title = 'Add an empty row above the displayed values', tooltip = 'Serves the purpose of not having the pane icons overlap with the ' + 'text in the table if multiple panes are shown and the chart pane is hovered')
-show_rsrating = input(true, title = 'Hide RS Rating')
-show_4_ema = input(false, title = 'Show 4 EMA on Chart (red line)')
-show_bb_dots = input(false, title = 'Show 30m and 1hr BB dots')
+// ========== BOTTOM RIGHT TABLE CONTENT ==========
+tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large], group = '📊 Top Right Table Content', tooltip = 'Size of the information table')
+bg_col = input(#00000000, title = 'Table Background Color', group = '📊 Top Right Table Content', tooltip = 'Background color for the information table')
+txt_col = input(color.rgb(0, 0, 0), title = 'Table Text Color', group = '📊 Top Right Table Content', tooltip = 'Text color for the information table')
+show_empty_row = input(true, title = 'Add Empty Row Above Values', group = '📊 Top Right Table Content', tooltip = 'Prevents pane icons from overlapping with table text when multiple panes are shown')
 
-// === ADJUSTABLE MA STRUCTURE SETTINGS ===
+// Market Data Items
+show_adrp = input(true, title = 'Show ADR%', group = '📊 Top Right Table Content', tooltip = 'Displays Average Daily Range percentage in the main table')
+adrp_len = input(20, title = 'ADR% Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars used in ADR% calculation')
+show_atr = input(false, title = 'Show ATR', group = '📊 Top Right Table Content', tooltip = 'Displays Average True Range in the main table')
+atr_len = input(14, title = 'ATR Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars used in ATR calculation')
+show_lod_dist = input(true, title = 'Show LoD Distance', group = '📊 Top Right Table Content', tooltip = 'Displays distance from Low of Day in the main table')
+show_mktCap = input(false, title = 'Show Market Cap', group = '📊 Top Right Table Content', tooltip = 'Displays Market Capitalization in the main table')
+show_floatpercent = input(false, title = 'Show Float %', group = '📊 Top Right Table Content', tooltip = 'Displays Float percentage in the main table')
+
+// Volume Analysis Items
+show_ADV = input(true, title = 'Show Average Daily Volume', group = '📊 Top Right Table Content', tooltip = 'Displays average daily volume in the main table')
+show_ADVS = input(false, title = 'Show Average Daily $ Volume', group = '📊 Top Right Table Content', tooltip = 'Displays average daily dollar volume in the main table')
+len = input(50, title = 'Volume MA Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars for volume moving average calculation')
+show_relVol = input(true, title = 'Show Relative Volume', group = '📊 Top Right Table Content', tooltip = 'Displays relative volume in the main table')
+show_projectedVol = input(true, title = 'Show Projected Volume', group = '📊 Top Right Table Content', tooltip = 'Displays projected volume in the main table')
+show_volBuzz = input(false, title = 'Show Volume Buzz', group = '📊 Top Right Table Content', tooltip = 'Displays volume buzz indicator in the main table')
+
+// Candle Analysis Items
+show_candle_analysis = input(true, title = 'Show Inside Candle Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays inside candle analysis with timeframe')
+candle_timeframe = input.string('30', title = 'Inside Candle Timeframe', options = ['30', '60', '240'], group = '📊 Top Right Table Content', tooltip = 'Select timeframe for candle analysis: 30=30min, 60=1hour, 240=4hour')
+rsi_length = input.int(14, title = 'RSI Length', group = '📊 Top Right Table Content', tooltip = 'RSI period length for inside candle analysis calculations')
+
+// Cloud & Trend Analysis Table Items
+show_clouds = input(true, title = 'Show Market Breadth Table', group = '📊 Bottom Right Table Content', tooltip = 'Displays market breadth table showing % of stocks above key MAs (5%, 20%) and trade conditions')
+show_trend_cloud_labels = input.bool(true, title = 'Show EMA Cloud Trends Table', group = '📊 Bottom Right Table Content', tooltip = 'Shows EMA cloud trends (5-12, 34-50) and VIX volatility trends in table format')
+show_three_ema = input(false, title = 'Show 3 EMA + RSI / 4 EMA', group = '📊 Bottom Right Table Content', tooltip = 'Displays 3 EMA analysis with RSI and 4 EMA data in the main table')
+ema5_length = input.int(5, title = 'EMA 5 Length', group = '🌥️ Cloud & Trend Analysis')
+ema12_length = input.int(12, title = 'EMA 12 Length', group = '🌥️ Cloud & Trend Analysis')
+ema34_length = input.int(34, title = 'EMA 34 Length', group = '🌥️ Cloud & Trend Analysis')
+ema50_length = input.int(50, title = 'EMA 50 Length', group = '🌥️ Cloud & Trend Analysis')
+
+// Market Breadth Items
+show_market_breadth = input(false, title = 'Show Market Breadth Symbols', group = '📊 Bottom Right Table Content', tooltip = 'Displays market breadth symbols (% above VWAP, TICK, etc.) in the main table')
+symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = '% Above VWAP Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % of stocks above VWAP')
+symbolToPull1 = input.symbol('TICK', title = 'TICK Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for TICK index')
+symbolToPull2 = input.symbol('S5TW', title = '% Above 20 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 20-day SMA')
+symbolToPull3 = input.symbol('NDFD', title = '% Above 5 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 5-day SMA')
+symbolToPull4 = input.symbol('S5TH', title = '% Above 200 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 200-day SMA')
+
+// Advanced Feature Items
+show_extended = input(true, title = 'Show Extended MA Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays extended moving Average analysis in the main table')
+extended_ema_input = input(20, title = 'Extended EMA Length', group = '📊 Top Right Table Content', tooltip = 'Which EMA to show extension from')
+extended_sma_input = input(50, title = 'Extended SMA Length', group = '📊 Top Right Table Content', tooltip = 'Which SMA to show extension from')
+show_launch_pad = input(false, title = 'Show Launch Pad Detection', group = '📊 Top Right Table Content', tooltip = 'Displays launch pad detection signals in the main table')
+show_fundamentals = input(false, title = 'Show Fundamentals', group = '📊 Top Right Table Content', tooltip = 'Displays fundamental data (PE, EBIDTA) in the main table')
+show_sector = input(true, title = 'Show Sector', group = '📊 Top Right Table Content', tooltip = 'Displays stock sector information in the main table')
+show_ind = input(true, title = 'Show Industry Group', group = '📊 Top Right Table Content', tooltip = 'Displays stock industry group information in the main table')
+
+// ========== VISUAL CUSTOMIZATION ==========
+remove_floats = input(false, title = 'Remove Right Sided Floating Prices', group = '🎨 Visual Customization')
+float_offset = input(15, title = 'Float Offset (bars)', group = '🎨 Visual Customization')
+hide_clouds = input(false, title = 'Hide Chart Cloud Fill', group = '🎨 Visual Customization')
+show_longer_ma = input(false, title = 'Show Longer MAs', group = '🎨 Visual Customization')
+show_rsrating = input(true, title = 'Hide RS Rating', group = '🎨 Visual Customization')
+show_4_ema = input(false, title = 'Show 4 EMA on Chart', group = '🎨 Visual Customization')
+show_bb_dots = input(false, title = 'Show BB Dots (30m/1hr)', group = '🎨 Visual Customization')
+
+// ========== RMV SETTINGS ==========
+cleanup = input(true, title = 'Hide Background Colors & Visual Effects', group = '📊 RMV Settings', tooltip = 'When enabled, hides background colors including: RMV (Range Movement Velocity) background zones, chart fills, and other visual effects for cleaner chart appearance')
+
+// RMV (Range Movement Velocity) Settings
+atrLength1 = input(3, title = 'RMV - ATR Length 1', group = '📊 RMV Settings', tooltip = 'ATR period 1 for RMV calculation (shorter = more sensitive)')
+atrLength2 = input(5, title = 'RMV - ATR Length 2', group = '📊 RMV Settings', tooltip = 'ATR period 2 for RMV calculation (medium sensitivity)')
+atrLength3 = input(8, title = 'RMV - ATR Length 3', group = '📊 RMV Settings', tooltip = 'ATR period 3 for RMV calculation (longer = smoother)')
+normLength = input(5, title = 'RMV - Normalization Lookback', group = '📊 RMV Settings', tooltip = 'Lookback period for RMV normalization (higher = more stable baseline)')
+showCross = input(true, title = 'RMV - Show Below Bars', group = '📊 RMV Settings', tooltip = 'Show RMV signal diamonds below bars when volatility is low')
+showBackgroundRMV = input(true, title = 'RMV - Show Background', group = '📊 RMV Settings', tooltip = 'Enable RMV background color zones based on volatility levels')
+
+// ========== EMA CLOUD SETTINGS ==========
+matype = input.string('EMA', title = 'MA Type', options = ['EMA', 'SMA'], group = '🌥️ Cloud & Trend Analysis', tooltip = 'Moving average type for EMA clouds')
+ma_len1 = input.int(8, title = 'Short EMA1 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len2 = input.int(9, title = 'Long EMA1 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len3 = input.int(5, title = 'Short EMA2 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len4 = input.int(13, title = 'Long EMA2 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len5 = input.int(34, title = 'Short EMA3 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len6 = input.int(50, title = 'Long EMA3 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len7 = input.int(72, title = 'Short EMA4 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len8 = input.int(89, title = 'Long EMA4 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len9 = input.int(180, title = 'Short EMA5 Length', group = '🌥️ Cloud & Trend Analysis')
+ma_len10 = input.int(200, title = 'Long EMA5 Length', group = '🌥️ Cloud & Trend Analysis')
+src = input.source(hl2, title = 'Source', group = '🌥️ Cloud & Trend Analysis')
+ma_offset = input.int(0, title = 'Offset', group = '🌥️ Cloud & Trend Analysis')
+showlong = input.bool(false, title = 'Show Long Alerts', group = '🌥️ Cloud & Trend Analysis')
+showshort = input.bool(false, title = 'Show Short Alerts', group = '🌥️ Cloud & Trend Analysis')
+showLine = input.bool(false, title = 'Display EMA Lines', group = '🌥️ Cloud & Trend Analysis')
+ema1 = input.bool(true, title = 'Show EMA Cloud-1', group = '🌥️ Cloud & Trend Analysis')
+ema2 = input.bool(true, title = 'Show EMA Cloud-2', group = '🌥️ Cloud & Trend Analysis')
+ema3 = input.bool(false, title = 'Show EMA Cloud-3', group = '🌥️ Cloud & Trend Analysis')
+ema4 = input.bool(true, title = 'Show EMA Cloud-4', group = '🌥️ Cloud & Trend Analysis')
+ema5c = input.bool(true, title = 'Show EMA Cloud-5', group = '🌥️ Cloud & Trend Analysis')
+emacloudleading = input.int(0, minval = 0, title = 'Leading Period For EMA Cloud', group = '🌥️ Cloud & Trend Analysis')
+
+// ========== BOLLINGER BANDS ==========
+length = input.int(20, title = 'BB Length', minval = 1, group = '📊 Bollinger Bands', tooltip = 'Length for Bollinger Band calculation')
+src_bb = input.source(close, title = 'BB Source', group = '📊 Bollinger Bands', tooltip = 'Source data for Bollinger Band calculation')
+mult = input.float(2.0, title = 'BB Multiplier', step = 0.1, group = '📊 Bollinger Bands', tooltip = 'Multiplier for Bollinger Band width')
+upper_band_color = input.color(#4caf4f00, title = 'Upper Band Color', group = '📊 Bollinger Bands', tooltip = 'Color for upper Bollinger Band line')
+lower_band_color = input.color(#4caf4f00, title = 'Lower Band Color', group = '📊 Bollinger Bands', tooltip = 'Color for lower Bollinger Band line')
+
+// ========== MA STRUCTURE SETTINGS ==========
 show_ma_structure = input.bool(true, title = 'Show MA Structure', group = 'MA Structure Settings')
 ma_structure_daily_length = input.int(21, title = 'Daily MA Length', minval = 1, group = 'MA Structure Settings')
 ma_structure_daily_type = input.string('EMA', title = 'Daily MA Type', options = ['SMA', 'EMA'], group = 'MA Structure Settings')
@@ -270,12 +337,6 @@ barcolor(show_ma_structure and ma_structure_change_bar_color ? barColorBasedOnMA
 // Define the 10-minute timeframe
 timeframe = '10'
 
-// Input lengths for the EMAs
-ema5_length = input.int(5, title = 'Length for 5 EMA')
-ema12_length = input.int(12, title = 'Length for 12 EMA')
-ema34_length = input.int(34, title = 'Length for 34 EMA')
-ema50_length = input.int(50, title = 'Length for 50 EMA')
-
 // Calculate the EMAs on a 10-minute timeframe
 [ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
 
@@ -383,35 +444,32 @@ swing_launch_pad = math.abs(five_diff) < 0.035 and math.abs(ten_diff) < 0.035 an
 
 pos_launch_pad = math.abs(fifty_diff) < 0.03 and math.abs(ten_diff) < 0.03 and math.abs(twenty_diff) < 0.03
 
+// Dynamic timeframe variables
+timeframe_label = candle_timeframe == '30' ? '30 Min' : candle_timeframe == '60' ? '60 Min' : '4 Hour'
+
 [yesterdayHigh, yesterdayLow] = request.security(syminfo.tickerid, 'D', [high[1], low[1]])
 
-[prior_30m_high, twoPriorthirtyMinHigh, twoPriorthirtyMinLow, prevThirtyMinHigh, prevThirtyMinLow] = request.security(syminfo.tickerid, '30', [high[1], high[2], low[2], high[1], low[1]])
-prior_30m_high_diff = (close - prior_30m_high) / close * 100
+[prior_tf_high, twoPriorTfHigh, twoPriorTfLow, prevTfHigh, prevTfLow] = request.security(syminfo.tickerid, candle_timeframe, [high[1], high[2], low[2], high[1], low[1]])
+prior_tf_high_diff = (close - prior_tf_high) / close * 100
 
-isInsideThirtyMinCandle = twoPriorthirtyMinHigh >= prevThirtyMinHigh and twoPriorthirtyMinLow <= prevThirtyMinLow ? 'Inside Candle' : ''
+isInsideTfCandle = twoPriorTfHigh >= prevTfHigh and twoPriorTfLow <= prevTfLow ? 'Inside Candle' : ''
 
 [prior_week_high, prior_week_low, twoPriorWeekHigh, twoPriorWeekLow] = request.security(syminfo.tickerid, 'W', [high[1], low[1], high[2], low[2]], lookahead=barmerge.lookahead_on)
 
 // Check if the prior week was an inside week
 isInsideWeekCandle = (prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow)
 
-// Input for RSI length
-rsi_length = input.int(14, title = 'RSI Length')
+// Fetch timeframe close prices
+close_tf = request.security(syminfo.tickerid, candle_timeframe, close)
 
-// Fetch 30-minute close prices
-close_30min = 1 //request.security(syminfo.tickerid, "30", close)
-
-// Calculate RSI on 30-minute data
-rsi_30min = ta.rsi(close_30min, rsi_length)
+// Calculate RSI on timeframe data
+rsi_tf = ta.rsi(close_tf, rsi_length)
 
 // Calculate VWAP
 vwap = ta.vwap(hlc3)
 
-symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = 'Symbol to Pull')
 percent_above_vwap = request.security(symbolToPull, '1', close)
-symbolToPull1 = input.symbol('TICK', title = 'Symbol to Pull')
 tick = request.security(symbolToPull1, '1', close)
-symbolToPull2 = input.symbol('S5TW', title = 'Symbol to Pull $ above 20 SMA')
 percent_above_20 = request.security(symbolToPull2, '1D', close)
 
 //5 DAY Breadth
@@ -421,10 +479,7 @@ percent_above_20 = request.security(symbolToPull2, '1D', close)
 //S5TW
 //NDTW
 
-symbolToPull3 = input.symbol('NDFD', title = 'Symbol to Pull % above 5 SMA')
 percent_above_5 = request.security(symbolToPull3, '1D', close)
-
-symbolToPull4 = input.symbol('S5TH', title = 'Symbol to Pull % above 200 SMA')
 percent_above_200 = request.security(symbolToPull4, '1D', close)
 
 table d = table.new(position.bottom_left, 2, 2, bgcolor = bg_col)
@@ -570,17 +625,17 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_projectedVol and show_relVol
         table.cell(t, 1, 8, 'Proj. Vol / Rel. Vol.', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 8, str.tostring(math.round(volume_projected, 2), '0.00') + uP + ' / ' + str.tostring(math.round(relVol)) + '%', text_color = txt_col, text_size = tbl_size)
-    if isInsideWeekCandle //or (show_30_min and isInsideThirtyMinCandle == 'Inside 30M Candle')
+    if isInsideWeekCandle //or (show_candle_analysis and isInsideTfCandle == 'Inside Candle')
         //prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow
         if isInsideWeekCandle
             insideWeekLabel = isInsideWeekCandle ? "Inside Week (" + str.tostring(prior_week_high) + " - " + str.tostring(prior_week_low) + ")": ""
-            bgcolor30m = prior_30m_high_diff > 0 ? #17880b51 : #880b0b50
+            bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
             table.cell(t, 1, 9, 'Inside Week', text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
-            table.cell(t, 2, 9, insideWeekLabel + ' ' + str.tostring(isInsideThirtyMinCandle), text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
+            table.cell(t, 2, 9, insideWeekLabel + ' ' + str.tostring(isInsideTfCandle), text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
         else
-            bgcolor30m = prior_30m_high_diff > 0 ? #17880b51 : #880b0b50
-            table.cell(t, 1, 9, '30 Min / Pior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
-            table.cell(t, 2, 9, str.tostring(isInsideThirtyMinCandle) + ' ' + str.tostring(math.round(prior_30m_high, 4)) + ' (' + str.tostring(math.round(prior_30m_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_30min, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolor30m)
+            bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
+            table.cell(t, 1, 9, timeframe_label + ' / Prior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
+            table.cell(t, 2, 9, str.tostring(isInsideTfCandle) + ' ' + str.tostring(math.round(prior_tf_high, 4)) + ' (' + str.tostring(math.round(prior_tf_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_tf, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
     if show_volBuzz
         table.cell(t, 1, 10, 'Vol. Buzz', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 10, str.tostring(math.round(volBuzz)) + '%', text_color = txt_col, text_size = tbl_size)
@@ -643,27 +698,7 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
 
 
 
-// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
-// © ripster47
-
-//@version=6
-//indicator("Ripster EMA Clouds + RSI", overlay=true)
-matype = input.string(title = 'MA Type', defval = 'EMA', options = ['EMA', 'SMA'])
-
-ma_len1 = input.int(title = 'Short EMA1 Length', defval = 8)
-ma_len2 = input.int(title = 'Long EMA1 Length', defval = 9)
-ma_len3 = input.int(title = 'Short EMA2 Length', defval = 5)
-ma_len4 = input.int(title = 'Long EMA2 Length', defval = 13)
-ma_len5 = input.int(title = 'Short EMA3 Length', defval = 34)
-ma_len6 = input.int(title = 'Long EMA3 Length', defval = 50)
-ma_len7 = input.int(title = 'Short EMA4 Length', defval = 72)
-ma_len8 = input.int(title = 'Long EMA4 Length', defval = 89)
-ma_len9 = input.int(title = 'Short EMA5 Length', defval = 180)
-ma_len10 = input.int(title = 'Long EMA5 Length', defval = 200)
-
-src = input.source(title = 'Source', defval = hl2)
-ma_offset = input.int(title = 'Offset', defval = 0)
-
+// EMA Cloud calculations (using organized inputs above)
 f_ma(malen) =>
     float result = na
     if matype == 'EMA'
@@ -674,6 +709,7 @@ f_ma(malen) =>
         result
     result
 
+// Calculate EMA values using organized inputs
 htf_ma1 = f_ma(ma_len1)
 htf_ma2 = f_ma(ma_len2)
 htf_ma3 = f_ma(ma_len3)
@@ -684,17 +720,6 @@ htf_ma7 = f_ma(ma_len7)
 htf_ma8 = f_ma(ma_len8)
 htf_ma9 = f_ma(ma_len9)
 htf_ma10 = f_ma(ma_len10)
-
-showlong = input.bool(false, title = 'Show Long Alerts')
-showshort = input.bool(false, title = 'Show Short Alerts')
-showLine = input.bool(false, title = 'Display EMA Line')
-ema1 = input.bool(true, title = 'Show EMA Cloud-1')
-ema2 = input.bool(true, title = 'Show EMA Cloud-2')
-ema3 = input.bool(false, title = 'Show EMA Cloud-3')
-ema4 = input.bool(true, title = 'Show EMA Cloud-4')
-ema5c = input.bool(true, title = 'Show EMA Cloud-5')
-
-emacloudleading = input.int(0, minval = 0, title = 'Leading Period For EMA Cloud')
 mashort1 = htf_ma1
 malong1 = htf_ma2
 mashort2 = htf_ma3
@@ -780,20 +805,11 @@ ema_4_std_plot = is_valid_timeframe ? ema_4 - std_dev : na
 //plot(ema_4_std_plot, title = 'EMA - 1 Std Dev', color = color.blue, linewidth = 1)
 // plot(ema_4_std_plot, title = 'EMA - 1 Std Dev', color = color.blue, linewidth = 1)
 
-// Input parameters for the Bollinger Bands
-length = input.int(20, title = 'Length', minval = 1)
-src_bb = input.source(close, title = 'Source') // Renamed input to src_bb
-mult = input.float(2.0, title = 'Multiplier', step = 0.1)
-
-// Calculate the Bollinger Bands
+// Bollinger Bands calculation (using organized inputs above)
 basis = ta.sma(src_bb, length)
 dev = mult * ta.stdev(src_bb, length)
 upper_band = basis + dev
 lower_band = basis - dev
-
-// Add user inputs for colors with default values
-upper_band_color = input.color(#4caf4f00, title = 'Upper Band Color')
-lower_band_color = input.color(#4caf4f00, title = 'Lower Band Color')
 fill_color = input.color(color.new(#904caf, 92), title = 'Band Fill Color')
 
 // Use the user-configurable colors
@@ -805,17 +821,12 @@ fill(upper_band_plot, lower_band_plot, color = is_valid_timeframe ? fill_color :
 
 // BLEOW THIS
 
-// Bollinger Band calculations removed to reduce request calls
-var float bb_lower_30m = na
-var float bb_lower_1h = na
-var float bb_lower_2h = na
-var float bb_lower_4h = na
-var float bb_lower_6h = na
-var float bb_upper_30m = na
-var float bb_upper_1h = na
-var float bb_upper_2h = na
-var float bb_upper_4h = na
-var float bb_upper_6h = na
+// Calculate Bollinger Bands for different timeframes
+[bb_lower_30m, bb_upper_30m] = request.security(syminfo.tickerid, "30", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_1h, bb_upper_1h] = request.security(syminfo.tickerid, "60", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_2h, bb_upper_2h] = request.security(syminfo.tickerid, "120", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_4h, bb_upper_4h] = request.security(syminfo.tickerid, "240", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_6h, bb_upper_6h] = request.security(syminfo.tickerid, "360", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
 
 // Combine the values into a single string
 bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###') + '\n2H: ' + str.tostring(bb_lower_2h, '#.###') + ' / ' + str.tostring(bb_upper_2h, '#.###') + '\n4H: ' + str.tostring(bb_lower_4h, '#.###') + ' / ' + str.tostring(bb_upper_4h, '#.###') + '\n6H: ' + str.tostring(bb_lower_6h, '#.###') + ' / ' + str.tostring(bb_upper_6h, '#.###')
@@ -937,14 +948,6 @@ if not remove_floats
 
 // RMV
 
-
-// User Inputs
-atrLength1 = input(3, title = 'RMV - ATR Length 1')
-atrLength2 = input(5, title = 'RMV - ATR Length 2')
-atrLength3 = input(8, title = 'RMV - ATR Length 3')
-normLength = input(5, title = 'RMV - Normalization Lookback')
-showCross = input(true, title = 'RMV - Show Below Bars ')
-showBackgroundRMV = input(true, title = 'RMV - Show Background')
 
 // Calculate ATR for different periods
 atr1 = ta.atr(atrLength1)
