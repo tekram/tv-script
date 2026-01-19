@@ -43,15 +43,41 @@ pos_launch_pad = math.abs(fifty_diff) < 0.03 and
 
 ### Table Display
 - **Location**: Top-right table
-- **Background**: Aqua color
+- **Background**: User customizable (default: Navy)
 - **Text**: White
 - **Row**: Shows when launch pad condition is met
 - **Label**: "Swing Launch Pad" or "Position Launch Pad"
 
+### Display Format
+The display shows detailed moving average information with the following format:
+
+#### With Prices Enabled (Default)
+**Swing Launch Pad**: `✓ 5 EMA:93932.51|10 EMA:93637.40|20 EMA:92551.01 (1.47%)`
+
+**Position Launch Pad**: `✓ 10 EMA:93637.40|20 EMA:92551.01|50 SMA:90303.16 (2.49%)`
+
+#### With Prices Disabled
+**Swing Launch Pad**: `✓ 5 EMA|10 EMA|20 EMA (1.47%)`
+
+**Position Launch Pad**: `✓ 10 EMA|20 EMA|50 SMA (2.49%)`
+
+### Display Components
+- **✓ Checkmark**: Indicates launch pad condition is active (true)
+- **MA Labels**: Shows moving average type and period (5 EMA, 10 EMA, 20 EMA, 50 SMA)
+- **MA Values**: Actual moving average prices (when enabled)
+- **Spread %**: Total percentage spread between outermost moving averages
+- **Background Color**: User customizable for visual preference
+
+### Configuration Options
+- **Show Launch Pad Detection**: Toggle launch pad feature on/off
+- **Show Launch Pad Prices**: Toggle display of actual MA values (default: true)
+- **Launch Pad Background Color**: Customize background color for launch pad rows
+
 ### Display Logic
 - Only shows when `show_launch_pad` is enabled
 - Displays both types if conditions are met
-- Shows boolean value (true/false)
+- Shows checkmark (✓) when condition is active
+- MA order: Position Launch Pad shows 10 EMA → 20 EMA → 50 SMA
 
 ## Trading Applications
 
