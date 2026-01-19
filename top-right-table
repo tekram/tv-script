@@ -65,6 +65,8 @@ show_extended = input(true, title = 'Show Extended MA Analysis', group = '📊 T
 extended_ema_input = input(20, title = 'Extended EMA Length', group = '📊 Top Right Table Content', tooltip = 'Which EMA to show extension from')
 extended_sma_input = input(50, title = 'Extended SMA Length', group = '📊 Top Right Table Content', tooltip = 'Which SMA to show extension from')
 show_launch_pad = input(false, title = 'Show Launch Pad Detection', group = '📊 Top Right Table Content', tooltip = 'Displays launch pad detection signals: Swing Launch Pad (5/10/20 EMAs within 3.5%) and Position Launch Pad (50 SMA + 10/20 EMAs within 3%)')
+launch_pad_bg_color = input(color.navy, title = 'Launch Pad Background Color', group = '📊 Top Right Table Content', tooltip = 'Background color for launch pad detection rows when active')
+show_launch_pad_prices = input(tfalse, title = 'Show Launch Pad Prices', group = '📊 Top Right Table Content', tooltip = 'Display actual EMA/SMA prices in launch pad setup. When disabled, shows only MA labels and spread percentage')
 show_fundamentals = input(false, title = 'Show Fundamentals', group = '📊 Top Right Table Content', tooltip = 'Displays fundamental data (PE, EBIDTA) in the main table')
 show_sector = input(true, title = 'Show Sector', group = '📊 Top Right Table Content', tooltip = 'Displays stock sector information in the main table')
 show_ind = input(true, title = 'Show Industry Group', group = '📊 Top Right Table Content', tooltip = 'Displays stock industry group information in the main table')
@@ -666,16 +668,22 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
             swing_spread_10_20 = math.abs(ten_dema - twenty_dema) / ten_dema * 100
             swing_spread_5_20 = math.abs(five_dema - twenty_dema) / five_dema * 100
             
-            table.cell(t, 1, 19, str.tostring('Swing Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
-            table.cell(t, 2, 19, '✓ ' + str.tostring(math.round(five_dema, 2)) + '|' + str.tostring(math.round(ten_dema, 2)) + '|' + str.tostring(math.round(twenty_dema, 2)) + ' (' + str.tostring(math.round(swing_spread_5_20, 2)) + '%)', text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+            // Format display based on user preference
+            swing_display = show_launch_pad_prices ? '✓ 5 EMA:' + str.tostring(math.round(five_dema, 2)) + '|10 EMA:' + str.tostring(math.round(ten_dema, 2)) + '|20 EMA:' + str.tostring(math.round(twenty_dema, 2)) + ' (' + str.tostring(math.round(swing_spread_5_20, 2)) + '%)' : '✓ 5 EMA|10 EMA|20 EMA (' + str.tostring(math.round(swing_spread_5_20, 2)) + '%)'
+            
+            table.cell(t, 1, 19, str.tostring('Swing Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = launch_pad_bg_color)
+            table.cell(t, 2, 19, swing_display, text_color = color.white, text_size = tbl_size, bgcolor = launch_pad_bg_color)
         if pos_launch_pad
             // Calculate MA spread for position launch pad
             pos_spread_10_20 = math.abs(ten_dema - twenty_dema) / ten_dema * 100
             pos_spread_50_10 = math.abs(fifty_dsma - ten_dema) / fifty_dsma * 100
             pos_spread_50_20 = math.abs(fifty_dsma - twenty_dema) / fifty_dsma * 100
             
-            table.cell(t, 1, 20, str.tostring('Position Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
-            table.cell(t, 2, 20, '✓ ' + str.tostring(math.round(fifty_dsma, 2)) + '|' + str.tostring(math.round(ten_dema, 2)) + '|' + str.tostring(math.round(twenty_dema, 2)) + ' (' + str.tostring(math.round(pos_spread_50_20, 2)) + '%)', text_color = color.white, text_size = tbl_size, bgcolor = color.aqua)
+            // Format display based on user preference
+            pos_display = show_launch_pad_prices ? '✓ 10 EMA:' + str.tostring(math.round(ten_dema, 2)) + '|20 EMA:' + str.tostring(math.round(twenty_dema, 2)) + '|50 SMA:' + str.tostring(math.round(fifty_dsma, 2)) + ' (' + str.tostring(math.round(pos_spread_50_20, 2)) + '%)' : '✓ 10 EMA|20 EMA|50 SMA (' + str.tostring(math.round(pos_spread_50_20, 2)) + '%)'
+            
+            table.cell(t, 1, 20, str.tostring('Position Launch Pad'), text_color = color.white, text_size = tbl_size, bgcolor = launch_pad_bg_color)
+            table.cell(t, 2, 20, pos_display, text_color = color.white, text_size = tbl_size, bgcolor = launch_pad_bg_color)
     if show_market_breadth
         bgcolorabovevwap = percent_above_vwap > 50 ? #17880b51 : #880b0b50
         bgcolortick = tick < -900 ? #17880b51 : #fcfbfb50
