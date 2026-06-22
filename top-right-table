@@ -38,10 +38,15 @@ show_relVol = input(true, title = 'Show Relative Volume', group = '📊 Top Righ
 show_projectedVol = input(true, title = 'Show Projected Volume', group = '📊 Top Right Table Content', tooltip = 'Displays projected volume in the main table')
 show_volBuzz = input(false, title = 'Show Volume Buzz', group = '📊 Top Right Table Content', tooltip = 'Displays volume buzz indicator in the main table')
 
+// ========== PRICE ACTION ANALYSIS ==========
 // Candle Analysis Items
 show_candle_analysis = input(true, title = 'Show Inside Candle Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays inside candle analysis with timeframe')
 candle_timeframe = input.string('30', title = 'Inside Candle Timeframe', options = ['30', '60', '240'], group = '📊 Top Right Table Content', tooltip = 'Select timeframe for candle analysis: 30=30min, 60=1hour, 240=4hour')
 rsi_length = input.int(14, title = 'RSI Length', group = '📊 Top Right Table Content', tooltip = 'RSI period length for inside candle analysis calculations')
+
+// Volume Bar Analysis Items
+show_volume_bar_analysis = input(true, title = 'Show Volume Bar Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays percentage of green vs red completed bars for current chart timeframe')
+volume_analysis_length = input.int(20, title = 'Volume Analysis Length', minval = 5, maxval = 100, group = '📊 Top Right Table Content', tooltip = 'Number of completed bars to analyze for green/red percentage')
 
 // Cloud & Trend Analysis Table Items
 show_clouds = input(true, title = 'Show Market Breadth Table', group = '📊 Bottom Right Table Content', tooltip = 'Displays market breadth table showing % of stocks above key MAs (5%, 20%) and trade conditions')
@@ -66,7 +71,7 @@ extended_ema_input = input(20, title = 'Extended EMA Length', group = '📊 Top 
 extended_sma_input = input(50, title = 'Extended SMA Length', group = '📊 Top Right Table Content', tooltip = 'Which SMA to show extension from')
 show_launch_pad = input(false, title = 'Show Launch Pad Detection', group = '📊 Top Right Table Content', tooltip = 'Displays launch pad detection signals: Swing Launch Pad (5/10/20 EMAs within 3.5%) and Position Launch Pad (50 SMA + 10/20 EMAs within 3%)')
 launch_pad_bg_color = input(color.navy, title = 'Launch Pad Background Color', group = '📊 Top Right Table Content', tooltip = 'Background color for launch pad detection rows when active')
-show_launch_pad_prices = input(tfalse, title = 'Show Launch Pad Prices', group = '📊 Top Right Table Content', tooltip = 'Display actual EMA/SMA prices in launch pad setup. When disabled, shows only MA labels and spread percentage')
+show_launch_pad_prices = input(false, title = 'Show Launch Pad Prices', group = '📊 Top Right Table Content', tooltip = 'Display actual EMA/SMA prices in launch pad setup. When disabled, shows only MA labels and spread percentage')
 show_fundamentals = input(false, title = 'Show Fundamentals', group = '📊 Top Right Table Content', tooltip = 'Displays fundamental data (PE, EBIDTA) in the main table')
 show_sector = input(true, title = 'Show Sector', group = '📊 Top Right Table Content', tooltip = 'Displays stock sector information in the main table')
 show_ind = input(true, title = 'Show Industry Group', group = '📊 Top Right Table Content', tooltip = 'Displays stock industry group information in the main table')
@@ -252,6 +257,38 @@ if na(industryGrp)
     industryGrp := 'N/A'
     industryGrp
 
+// 10) Volume Bar Analysis
+// Calculate green/red bar percentage for the specified number of completed bars from current chart timeframe
+int green_count = 0
+int red_count = 0
+int total_count = 0
+float green_volume = 0.0
+float red_volume = 0.0
+float total_volume = 0.0
+
+if show_volume_bar_analysis
+    for i = 1 to volume_analysis_length
+        if not na(close[i]) and not na(open[i]) and not na(volume[i])
+            if close[i] > open[i]
+                green_count += 1
+                green_volume += volume[i]
+            else if close[i] < open[i]
+                red_count += 1
+                red_volume += volume[i]
+            total_count += 1
+            total_volume += volume[i]
+
+// Calculate percentages
+green_percentage = total_count > 0 ? (green_count * 100.0) / total_count : 0.0
+red_percentage = total_count > 0 ? (red_count * 100.0) / total_count : 0.0
+
+// Calculate volume percentages
+green_volume_percentage = total_volume > 0 ? (green_volume / total_volume) * 100.0 : 0.0
+red_volume_percentage = total_volume > 0 ? (red_volume / total_volume) * 100.0 : 0.0
+
+// Determine background color based on green percentage
+volume_analysis_bgcolor = green_percentage > 60 ? color.rgb(23, 136, 11, 51) : green_percentage > 40 ? color.rgb(49, 27, 146, 73) : color.rgb(136, 11, 11, 51)
+
 
 //period = request.periods.QUARTERLY  // Change to request.periods.ANNUAL for annual data or request.periods.TTM for trailing twelve months
 
@@ -334,15 +371,19 @@ fill(pMAHigh, pMALow, color = show_ma_structure ? ma_structure_cloud_color : na,
 // Apply bar color
 barcolor(show_ma_structure and ma_structure_change_bar_color ? barColorBasedOnMATrend : na)
 
-// Intraday Cloud
+// Intraday Cloud — always 10-min regardless of chart timeframe
+// Uses request.security_lower_tf() to allow fetching 10-min data from higher-TF charts
 
-// Define the 10-minute timeframe
-timeframe = '10'
+ema5_arr   = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema5_length))
+ema12_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema12_length))
+ema34_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema34_length))
+ema50_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema50_length))
 
-// Calculate the EMAs on a 10-minute timeframe
-[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+ema5  = array.size(ema5_arr)  > 0 ? array.last(ema5_arr)  : ta.ema(close, ema5_length)
+ema12 = array.size(ema12_arr) > 0 ? array.last(ema12_arr) : ta.ema(close, ema12_length)
+ema34 = array.size(ema34_arr) > 0 ? array.last(ema34_arr) : ta.ema(close, ema34_length)
+ema50 = array.size(ema50_arr) > 0 ? array.last(ema50_arr) : ta.ema(close, ema50_length)
 
-// Conditions to check if one EMA is above another
 is_ema5_above_ema12 = ema5 > ema12
 is_ema34_above_ema50 = ema34 > ema50
 
@@ -353,12 +394,18 @@ short_cloud_color = is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
 long_cloud_color = is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
 
 
-// Intraday VIX
+// Intraday VIX — same approach
 
-// Calculate the EMAs on a 10-minute timeframe
-[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', timeframe, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+vix_ema5_arr  = request.security_lower_tf('VIX', '10', ta.ema(close, ema5_length))
+vix_ema12_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema12_length))
+vix_ema34_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema34_length))
+vix_ema50_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema50_length))
 
-// Conditions to check if one EMA is above another
+vix_ema5  = array.size(vix_ema5_arr)  > 0 ? array.last(vix_ema5_arr)  : ta.ema(close, ema5_length)
+vix_ema12 = array.size(vix_ema12_arr) > 0 ? array.last(vix_ema12_arr) : ta.ema(close, ema12_length)
+vix_ema34 = array.size(vix_ema34_arr) > 0 ? array.last(vix_ema34_arr) : ta.ema(close, ema34_length)
+vix_ema50 = array.size(vix_ema50_arr) > 0 ? array.last(vix_ema50_arr) : ta.ema(close, ema50_length)
+
 vix_is_ema5_above_ema12 = vix_ema5 > vix_ema12
 vix_is_ema34_above_ema50 = vix_ema34 > vix_ema50
 
@@ -598,7 +645,7 @@ if show_clouds
 
 // Display Table
 tfDaily = timeframe.isdaily
-table t = table.new(position.top_right, 3, 24, bgcolor = bg_col)
+table t = table.new(position.top_right, 3, 26, bgcolor = bg_col)
 if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_empty_row
         table.cell(t, 1, 0, '')
@@ -627,7 +674,7 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_projectedVol and show_relVol
         table.cell(t, 1, 8, 'Proj. Vol / Rel. Vol.', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 8, str.tostring(math.round(volume_projected, 2), '0.00') + uP + ' / ' + str.tostring(math.round(relVol)) + '%', text_color = txt_col, text_size = tbl_size)
-    if isInsideWeekCandle //or (show_candle_analysis and isInsideTfCandle == 'Inside Candle')
+    if isInsideWeekCandle or (show_candle_analysis and isInsideTfCandle == 'Inside Candle')
         //prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow
         if isInsideWeekCandle
             insideWeekLabel = isInsideWeekCandle ? "Inside Week (" + str.tostring(prior_week_high) + " - " + str.tostring(prior_week_low) + ")": ""
@@ -638,6 +685,10 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
             bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
             table.cell(t, 1, 9, timeframe_label + ' / Prior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
             table.cell(t, 2, 9, str.tostring(isInsideTfCandle) + ' ' + str.tostring(math.round(prior_tf_high, 4)) + ' (' + str.tostring(math.round(prior_tf_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_tf, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
+    else if show_candle_analysis
+        bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
+        table.cell(t, 1, 9, timeframe_label + ' / Prior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
+        table.cell(t, 2, 9, str.tostring(isInsideTfCandle) + ' ' + str.tostring(math.round(prior_tf_high, 4)) + ' (' + str.tostring(math.round(prior_tf_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_tf, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
     if show_volBuzz
         table.cell(t, 1, 10, 'Vol. Buzz', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 10, str.tostring(math.round(volBuzz)) + '%', text_color = txt_col, text_size = tbl_size)
@@ -710,6 +761,11 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_fundamentals
         table.cell(t, 1, 23, 'Fundamentals (PE/EBIDTA)', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 23, 'X', text_color = txt_col, text_size = tbl_size)
+    if show_volume_bar_analysis and total_count > 0
+        table.cell(t, 1, 24, 'Green/Red (' + str.tostring(total_count) + ' bars)', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
+        table.cell(t, 2, 24, str.tostring(math.round(green_percentage, 1)) + '% / ' + str.tostring(math.round(red_percentage, 1)) + '%', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
+        table.cell(t, 1, 25, 'Green/Red Volume (' + str.tostring(total_count) + ' bars)', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
+        table.cell(t, 2, 25, str.tostring(math.round(green_volume_percentage, 1)) + '% / ' + str.tostring(math.round(red_volume_percentage, 1)) + '%', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
         //table.merge_cells(t, 1, 18, 2, 18)
         //table.merge_cells(t, 1, 19, 2, 19)
 
