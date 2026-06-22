@@ -371,18 +371,13 @@ fill(pMAHigh, pMALow, color = show_ma_structure ? ma_structure_cloud_color : na,
 // Apply bar color
 barcolor(show_ma_structure and ma_structure_change_bar_color ? barColorBasedOnMATrend : na)
 
-// Intraday Cloud — always 10-min regardless of chart timeframe
-// Uses request.security_lower_tf() to allow fetching 10-min data from higher-TF charts
+// Intraday Cloud — uses 10-min on charts <= 10-min; falls back to chart TF on higher charts.
+// Pine Script cannot request a lower TF via request.security(), so on daily/weekly charts
+// the cloud reflects the chart's own EMA relationship instead of a fixed 10-min window.
 
-ema5_arr   = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema5_length))
-ema12_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema12_length))
-ema34_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema34_length))
-ema50_arr  = request.security_lower_tf(syminfo.tickerid, '10', ta.ema(close, ema50_length))
+cloud_tf = timeframe.in_seconds() > 600 ? timeframe.period : '10'
 
-ema5  = array.size(ema5_arr)  > 0 ? array.last(ema5_arr)  : ta.ema(close, ema5_length)
-ema12 = array.size(ema12_arr) > 0 ? array.last(ema12_arr) : ta.ema(close, ema12_length)
-ema34 = array.size(ema34_arr) > 0 ? array.last(ema34_arr) : ta.ema(close, ema34_length)
-ema50 = array.size(ema50_arr) > 0 ? array.last(ema50_arr) : ta.ema(close, ema50_length)
+[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, cloud_tf, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
 
 is_ema5_above_ema12 = ema5 > ema12
 is_ema34_above_ema50 = ema34 > ema50
@@ -394,17 +389,9 @@ short_cloud_color = is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
 long_cloud_color = is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
 
 
-// Intraday VIX — same approach
+// Intraday VIX — same TF guard
 
-vix_ema5_arr  = request.security_lower_tf('VIX', '10', ta.ema(close, ema5_length))
-vix_ema12_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema12_length))
-vix_ema34_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema34_length))
-vix_ema50_arr = request.security_lower_tf('VIX', '10', ta.ema(close, ema50_length))
-
-vix_ema5  = array.size(vix_ema5_arr)  > 0 ? array.last(vix_ema5_arr)  : ta.ema(close, ema5_length)
-vix_ema12 = array.size(vix_ema12_arr) > 0 ? array.last(vix_ema12_arr) : ta.ema(close, ema12_length)
-vix_ema34 = array.size(vix_ema34_arr) > 0 ? array.last(vix_ema34_arr) : ta.ema(close, ema34_length)
-vix_ema50 = array.size(vix_ema50_arr) > 0 ? array.last(vix_ema50_arr) : ta.ema(close, ema50_length)
+[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', cloud_tf, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
 
 vix_is_ema5_above_ema12 = vix_ema5 > vix_ema12
 vix_is_ema34_above_ema50 = vix_ema34 > vix_ema50
@@ -517,8 +504,8 @@ rsi_tf = ta.rsi(close_tf, rsi_length)
 // Calculate VWAP
 vwap = ta.vwap(hlc3)
 
-percent_above_vwap = request.security(symbolToPull, '1', close)
-tick = request.security(symbolToPull1, '1', close)
+percent_above_vwap = request.security(symbolToPull, timeframe.period, close)
+tick = request.security(symbolToPull1, timeframe.period, close)
 percent_above_20 = request.security(symbolToPull2, '1D', close)
 
 //5 DAY Breadth
@@ -896,11 +883,17 @@ fill(upper_band_plot, lower_band_plot, color = is_valid_timeframe ? fill_color :
 // BLEOW THIS
 
 // Calculate Bollinger Bands for different timeframes
-[bb_lower_30m, bb_upper_30m] = request.security(syminfo.tickerid, "30", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_1h, bb_upper_1h] = request.security(syminfo.tickerid, "60", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_2h, bb_upper_2h] = request.security(syminfo.tickerid, "120", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_4h, bb_upper_4h] = request.security(syminfo.tickerid, "240", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_6h, bb_upper_6h] = request.security(syminfo.tickerid, "360", [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+bb_tf_30m = timeframe.in_seconds() > 1800  ? timeframe.period : "30"
+bb_tf_1h  = timeframe.in_seconds() > 3600  ? timeframe.period : "60"
+bb_tf_2h  = timeframe.in_seconds() > 7200  ? timeframe.period : "120"
+bb_tf_4h  = timeframe.in_seconds() > 14400 ? timeframe.period : "240"
+bb_tf_6h  = timeframe.in_seconds() > 21600 ? timeframe.period : "360"
+
+[bb_lower_30m, bb_upper_30m] = request.security(syminfo.tickerid, bb_tf_30m, [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_1h, bb_upper_1h]   = request.security(syminfo.tickerid, bb_tf_1h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_2h, bb_upper_2h]   = request.security(syminfo.tickerid, bb_tf_2h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_4h, bb_upper_4h]   = request.security(syminfo.tickerid, bb_tf_4h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+[bb_lower_6h, bb_upper_6h]   = request.security(syminfo.tickerid, bb_tf_6h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
 
 // Combine the values into a single string
 bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###') + '\n2H: ' + str.tostring(bb_lower_2h, '#.###') + ' / ' + str.tostring(bb_upper_2h, '#.###') + '\n4H: ' + str.tostring(bb_lower_4h, '#.###') + ' / ' + str.tostring(bb_upper_4h, '#.###') + '\n6H: ' + str.tostring(bb_lower_6h, '#.###') + ' / ' + str.tostring(bb_upper_6h, '#.###')
