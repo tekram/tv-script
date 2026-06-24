@@ -429,7 +429,8 @@ if show_trend_cloud_labels //and is_ema5_above_ema12
 
 price_sma = ta.sma(close, 50)
 price_ema = ta.ema(close, 20)
-price_20_ema_hourly = request.security(syminfo.tickerid, "60", ta.ema(close, 20))
+hourly_tf = timeframe.in_seconds() > 3600 ? timeframe.period : "60"
+price_20_ema_hourly = request.security(syminfo.tickerid, hourly_tf, ta.ema(close, 20))
 price_10_ema = ta.ema(close, 10)
 price_5_ema = ta.ema(close, 5)
 price_3_ema = ta.ema(close, 3)
@@ -485,7 +486,8 @@ timeframe_label = candle_timeframe == '30' ? '30 Min' : candle_timeframe == '60'
 
 [yesterdayHigh, yesterdayLow] = request.security(syminfo.tickerid, 'D', [high[1], low[1]])
 
-[prior_tf_high, twoPriorTfHigh, twoPriorTfLow, prevTfHigh, prevTfLow] = request.security(syminfo.tickerid, candle_timeframe, [high[1], high[2], low[2], high[1], low[1]])
+safe_candle_tf = timeframe.in_seconds() > timeframe.in_seconds(candle_timeframe) ? timeframe.period : candle_timeframe
+[prior_tf_high, twoPriorTfHigh, twoPriorTfLow, prevTfHigh, prevTfLow] = request.security(syminfo.tickerid, safe_candle_tf, [high[1], high[2], low[2], high[1], low[1]])
 prior_tf_high_diff = (close - prior_tf_high) / close * 100
 
 isInsideTfCandle = twoPriorTfHigh >= prevTfHigh and twoPriorTfLow <= prevTfLow ? 'Inside Candle' : ''
@@ -496,7 +498,7 @@ isInsideTfCandle = twoPriorTfHigh >= prevTfHigh and twoPriorTfLow <= prevTfLow ?
 isInsideWeekCandle = (prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow)
 
 // Fetch timeframe close prices
-close_tf = request.security(syminfo.tickerid, candle_timeframe, close)
+close_tf = request.security(syminfo.tickerid, safe_candle_tf, close)
 
 // Calculate RSI on timeframe data
 rsi_tf = ta.rsi(close_tf, rsi_length)
