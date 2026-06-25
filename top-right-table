@@ -389,8 +389,8 @@ short_cloud_color = is_ema5_above_ema12 ? color.rgb(45, 96, 46) : #880b0bf5
 long_cloud_color = is_ema34_above_ema50 ? color.rgb(45, 96, 46) : #880b0bf5
 
 
-// Intraday VIX — same TF guard
-[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', cloud_tf, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+// Intraday VIX — hardcoded 10-min test
+[vix_ema5, vix_ema12, vix_ema34, vix_ema50] = request.security('VIX', '10', [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
 
 vix_is_ema5_above_ema12 = vix_ema5 > vix_ema12
 vix_is_ema34_above_ema50 = vix_ema34 > vix_ema50
