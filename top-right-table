@@ -371,13 +371,8 @@ fill(pMAHigh, pMALow, color = show_ma_structure ? ma_structure_cloud_color : na,
 // Apply bar color
 barcolor(show_ma_structure and ma_structure_change_bar_color ? barColorBasedOnMATrend : na)
 
-// Intraday Cloud — uses 10-min on charts <= 10-min; falls back to chart TF on higher charts.
-// Pine Script cannot request a lower TF via request.security(), so on daily/weekly charts
-// the cloud reflects the chart's own EMA relationship instead of a fixed 10-min window.
-
-cloud_tf = timeframe.in_seconds() > 600 ? timeframe.period : '10'
-
-[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, cloud_tf, [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
+// Intraday Cloud — always uses 10-min data regardless of chart timeframe.
+[ema5, ema12, ema34, ema50] = request.security(syminfo.tickerid, '10', [ta.ema(close, ema5_length), ta.ema(close, ema12_length), ta.ema(close, ema34_length), ta.ema(close, ema50_length)])
 
 is_ema5_above_ema12 = ema5 > ema12
 is_ema34_above_ema50 = ema34 > ema50
