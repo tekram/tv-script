@@ -889,18 +889,23 @@ fill(upper_band_plot, lower_band_plot, color = is_valid_timeframe ? fill_color :
 
 // BLEOW THIS
 
-// Calculate Bollinger Bands for different timeframes
+// BB multi-TF calls — TEMP COMMENTED OUT FOR DEBUGGING
 bb_tf_30m = timeframe.in_seconds() > 1800  ? timeframe.period : "30"
 bb_tf_1h  = timeframe.in_seconds() > 3600  ? timeframe.period : "60"
 bb_tf_2h  = timeframe.in_seconds() > 7200  ? timeframe.period : "120"
 bb_tf_4h  = timeframe.in_seconds() > 14400 ? timeframe.period : "240"
 bb_tf_6h  = timeframe.in_seconds() > 21600 ? timeframe.period : "360"
 
-[bb_lower_30m, bb_upper_30m] = request.security(syminfo.tickerid, bb_tf_30m, [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_1h, bb_upper_1h]   = request.security(syminfo.tickerid, bb_tf_1h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_2h, bb_upper_2h]   = request.security(syminfo.tickerid, bb_tf_2h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_4h, bb_upper_4h]   = request.security(syminfo.tickerid, bb_tf_4h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
-[bb_lower_6h, bb_upper_6h]   = request.security(syminfo.tickerid, bb_tf_6h,  [ta.sma(low, length) - mult * ta.stdev(close, length), ta.sma(high, length) + mult * ta.stdev(close, length)])
+bb_lower_30m = float(na)
+bb_upper_30m = float(na)
+bb_lower_1h  = float(na)
+bb_upper_1h  = float(na)
+bb_lower_2h  = float(na)
+bb_upper_2h  = float(na)
+bb_lower_4h  = float(na)
+bb_upper_4h  = float(na)
+bb_lower_6h  = float(na)
+bb_upper_6h  = float(na)
 
 // Combine the values into a single string
 bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tostring(bb_upper_30m, '#.###') + '\n1H: ' + str.tostring(bb_lower_1h, '#.###') + ' / ' + str.tostring(bb_upper_1h, '#.###') + '\n2H: ' + str.tostring(bb_lower_2h, '#.###') + ' / ' + str.tostring(bb_upper_2h, '#.###') + '\n4H: ' + str.tostring(bb_lower_4h, '#.###') + ' / ' + str.tostring(bb_upper_4h, '#.###') + '\n6H: ' + str.tostring(bb_lower_6h, '#.###') + ' / ' + str.tostring(bb_upper_6h, '#.###')
