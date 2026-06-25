@@ -757,28 +757,18 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
 
 
 
-// EMA Cloud calculations (using organized inputs above)
-f_ma(malen) =>
-    float result = na
-    if matype == 'EMA'
-        result := ta.ema(src, malen)
-        result
-    if matype == 'SMA'
-        result := ta.sma(src, malen)
-        result
-    result
-
-// Calculate EMA values using organized inputs
-htf_ma1 = f_ma(ma_len1)
-htf_ma2 = f_ma(ma_len2)
-htf_ma3 = f_ma(ma_len3)
-htf_ma4 = f_ma(ma_len4)
-htf_ma5 = f_ma(ma_len5)
-htf_ma6 = f_ma(ma_len6)
-htf_ma7 = f_ma(ma_len7)
-htf_ma8 = f_ma(ma_len8)
-htf_ma9 = f_ma(ma_len9)
-htf_ma10 = f_ma(ma_len10)
+// EMA Cloud calculations — always 10-min so clouds are consistent on any chart TF
+[htf_ma1, htf_ma2, htf_ma3, htf_ma4, htf_ma5, htf_ma6, htf_ma7, htf_ma8, htf_ma9, htf_ma10] = request.security(syminfo.tickerid, '10', [
+    matype == 'EMA' ? ta.ema(src, ma_len1)  : ta.sma(src, ma_len1),
+    matype == 'EMA' ? ta.ema(src, ma_len2)  : ta.sma(src, ma_len2),
+    matype == 'EMA' ? ta.ema(src, ma_len3)  : ta.sma(src, ma_len3),
+    matype == 'EMA' ? ta.ema(src, ma_len4)  : ta.sma(src, ma_len4),
+    matype == 'EMA' ? ta.ema(src, ma_len5)  : ta.sma(src, ma_len5),
+    matype == 'EMA' ? ta.ema(src, ma_len6)  : ta.sma(src, ma_len6),
+    matype == 'EMA' ? ta.ema(src, ma_len7)  : ta.sma(src, ma_len7),
+    matype == 'EMA' ? ta.ema(src, ma_len8)  : ta.sma(src, ma_len8),
+    matype == 'EMA' ? ta.ema(src, ma_len9)  : ta.sma(src, ma_len9),
+    matype == 'EMA' ? ta.ema(src, ma_len10) : ta.sma(src, ma_len10)])
 mashort1 = htf_ma1
 malong1 = htf_ma2
 mashort2 = htf_ma3
