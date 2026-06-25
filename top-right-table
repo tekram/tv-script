@@ -509,10 +509,10 @@ rsi_tf = ta.rsi(close_tf, rsi_length)
 // Calculate VWAP
 vwap = ta.vwap(hlc3)
 
-// PCTABOVEVWAP and TICK are intraday symbols — cap at 60-min for higher TF charts
+// PCTABOVEVWAP and TICK — confirmed culprit, stubbed pending proper fix
 breadth_intraday_tf = timeframe.in_seconds() > 3600 ? '60' : timeframe.period
-percent_above_vwap = request.security(symbolToPull, breadth_intraday_tf, close)
-tick = request.security(symbolToPull1, breadth_intraday_tf, close)
+percent_above_vwap = float(na)
+tick = float(na)
 percent_above_20 = request.security(symbolToPull2, '1D', close)
 
 //5 DAY Breadth
