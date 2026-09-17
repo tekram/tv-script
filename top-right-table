@@ -844,8 +844,6 @@ mashortcolor5 = mashort5 >= mashort5[1] ? color.olive : color.maroon
 mashortline1 = plot(ema1 ? mashort1 : na, color = showLine ? mashortcolor1 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA1')
 mashortline2 = plot(ema2 ? mashort2 : na, color = showLine ? mashortcolor2 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA2')
 mashortline3 = plot(ema3 ? mashort3 : na, color = showLine ? mashortcolor3 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA3')
-mashortline4 = plot(ema4 ? mashort4 : na, color = showLine ? mashortcolor4 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA4')
-mashortline5 = plot(ema5c ? mashort5 : na, color = showLine ? mashortcolor5 : na, linewidth = 1, offset = emacloudleading, title = 'Short Leading EMA5')
 
 malongcolor1 = malong1 >= malong1[1] ? color.green : color.red
 malongcolor2 = malong2 >= malong2[1] ? color.rgb(76, 175, 79, 68) : color.red
@@ -856,8 +854,6 @@ malongcolor5 = malong5 >= malong5[1] ? color.green : color.red
 malongline1 = plot(ema1 ? malong1 : na, color = showLine ? malongcolor1 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA1')
 malongline2 = plot(ema2 ? malong2 : na, color = showLine ? malongcolor2 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA2')
 malongline3 = plot(ema3 ? malong3 : na, color = showLine ? malongcolor3 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA3')
-malongline4 = plot(ema4 ? malong4 : na, color = showLine ? malongcolor4 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA4')
-malongline5 = plot(ema5c ? malong5 : na, color = showLine ? malongcolor5 : na, linewidth = 3, offset = emacloudleading, title = 'Long Leading EMA5')
 
 var bool is_30min_60min = (timeframe.period == "30") or (timeframe.period == "60")
 
@@ -866,8 +862,6 @@ fill(mashortline2, malongline2, color = is_30min_60min or hide_clouds ? na : clo
 
 fill(mashortline1, malongline1, color = cloudcolour1, title = 'MA Cloud1')
 fill(mashortline3, malongline3, color = cloudcolour3, title = 'MA Cloud3')
-fill(mashortline4, malongline4, color = cloudcolour4, title = 'MA Cloud4', display = display.none)
-fill(mashortline5, malongline5, color = cloudcolour5, title = 'MA Cloud5', display = display.none)
 
 // DAILY EMAS
 
@@ -1510,15 +1504,17 @@ ema_512_bear          = not is_ema5_above_ema12 and is_ema5_above_ema12[1]
 ema_3450_bull         = is_ema34_above_ema50 and not is_ema34_above_ema50[1]
 ema_3450_bear         = not is_ema34_above_ema50 and is_ema34_above_ema50[1]
 
-alertcondition(inside_candle_new, title = '🕯 Inside Candle (Chart TF)',    message = '{"ticker":"{{ticker}}","signal":"inside_candle","close":{{close}},"high":{{high}},"low":{{low}},"time":"{{time}}"}')
-alertcondition(inside_week_new,   title = '📅 Inside Week',                  message = '{"ticker":"{{ticker}}","signal":"inside_week","close":{{close}},"time":"{{time}}"}')
-alertcondition(inside_tf_new,     title = '🕯 Inside TF Candle',             message = '{"ticker":"{{ticker}}","signal":"inside_tf_candle","close":{{close}},"time":"{{time}}"}')
-alertcondition(swing_lp_new,      title = '🚀 Swing Launch Pad',             message = '{"ticker":"{{ticker}}","signal":"swing_launch_pad","close":{{close}},"time":"{{time}}"}')
-alertcondition(pos_lp_new,        title = '🚀 Position Launch Pad',          message = '{"ticker":"{{ticker}}","signal":"pos_launch_pad","close":{{close}},"time":"{{time}}"}')
-alertcondition(ema_512_bull,      title = '📈 5-12 EMA Cloud → Bullish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bullish","close":{{close}},"time":"{{time}}"}')
-alertcondition(ema_512_bear,      title = '📉 5-12 EMA Cloud → Bearish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bearish","close":{{close}},"time":"{{time}}"}')
-alertcondition(ema_3450_bull,     title = '📈 34-50 EMA Cloud → Bullish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bullish","close":{{close}},"time":"{{time}}"}')
-alertcondition(ema_3450_bear,     title = '📉 34-50 EMA Cloud → Bearish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bearish","close":{{close}},"time":"{{time}}"}')
+// alertcondition calls commented out — each counts toward the 64-plot limit; uncomment when ready to use
+// alertcondition(inside_candle_new, title = '🕯 Inside Candle (Chart TF)',    message = '{"ticker":"{{ticker}}","signal":"inside_candle","close":{{close}},"high":{{high}},"low":{{low}},"time":"{{time}}"}')
+// alertcondition(inside_week_new,   title = '📅 Inside Week',                  message = '{"ticker":"{{ticker}}","signal":"inside_week","close":{{close}},"time":"{{time}}"}')
+// alertcondition(inside_tf_new,     title = '🕯 Inside TF Candle',             message = '{"ticker":"{{ticker}}","signal":"inside_tf_candle","close":{{close}},"time":"{{time}}"}')
+// alertcondition(swing_lp_new,      title = '🚀 Swing Launch Pad',             message = '{"ticker":"{{ticker}}","signal":"swing_launch_pad","close":{{close}},"time":"{{time}}"}')
+// alertcondition(pos_lp_new,        title = '🚀 Position Launch Pad',          message = '{"ticker":"{{ticker}}","signal":"pos_launch_pad","close":{{close}},"time":"{{time}}"}')
+// alertcondition(ema_512_bull,      title = '📈 5-12 EMA Cloud → Bullish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bullish","close":{{close}},"time":"{{time}}"}')
+// alertcondition(ema_512_bear,      title = '📉 5-12 EMA Cloud → Bearish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bearish","close":{{close}},"time":"{{time}}"}')
+// alertcondition(ema_3450_bull,     title = '📈 34-50 EMA Cloud → Bullish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bullish","close":{{close}},"time":"{{time}}"}')
+// alertcondition(ema_3450_bear,     title = '📉 34-50 EMA Cloud → Bearish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bearish","close":{{close}},"time":"{{time}}"}')
+
 
 // alert() fires with richer computed payload (symbol, key prices, indicator values).
 // These run alongside alertcondition — both can be active at the same time.
