@@ -714,22 +714,18 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_candle_analysis and (isInsideTfCandle == 'Inside Candle' or isInsideChartCandle)
         chart_tf_label = timeframe.isdaily ? 'Daily' : timeframe.isweekly ? 'Weekly' : timeframe.period + ' Min'
         inside_label_tf = isInsideChartCandle ? chart_tf_label : timeframe_label
-        // Trigger levels = the inside candle's own H/L (high[1]/low[1])
-        // Container range shown separately for context
         ic_h = isInsideChartCandle ? high[1] : prevTfHigh
         ic_l = isInsideChartCandle ? low[1]  : prevTfLow
-        container_h = isInsideChartCandle ? high[2] : twoPriorTfHigh
-        container_l = isInsideChartCandle ? low[2]  : twoPriorTfLow
-        broke_high   = high >= ic_h
-        broke_low    = low  <= ic_l
-        above_h      = broke_high and close >= ic_h
-        faded_h      = broke_high and close <  ic_h
-        below_l      = broke_low  and close <= ic_l
-        reclaimed_l  = broke_low  and close >  ic_l
+        broke_high  = high >= ic_h
+        broke_low   = low  <= ic_l
+        above_h     = broke_high and close >= ic_h
+        faded_h     = broke_high and close <  ic_h
+        below_l     = broke_low  and close <= ic_l
+        reclaimed_l = broke_low  and close >  ic_l
         inside_status = above_h ? ' ↑ Broke H' : faded_h ? ' ↑ Faded H' : below_l ? ' ↓ Broke L' : reclaimed_l ? ' ↓ Reclaimed L' : ''
         inside_bg = above_h ? color.rgb(14, 100, 14, 40) : faded_h ? color.rgb(180, 100, 0, 40) : below_l ? color.rgb(160, 20, 20, 40) : reclaimed_l ? color.rgb(180, 100, 0, 40) : color.rgb(49, 27, 146, 73)
         table.cell(t, 1, 11, 'Inside ' + inside_label_tf, text_color = txt_col, text_size = tbl_size, bgcolor = inside_bg)
-        table.cell(t, 2, 11, 'IC: ' + str.tostring(ic_h, '#.##') + '/' + str.tostring(ic_l, '#.##') + ' Box: ' + str.tostring(container_h, '#.##') + '/' + str.tostring(container_l, '#.##') + inside_status, text_color = txt_col, text_size = tbl_size, bgcolor = inside_bg)
+        table.cell(t, 2, 11, 'H: ' + str.tostring(ic_h, '#.##') + '  L: ' + str.tostring(ic_l, '#.##') + inside_status, text_color = txt_col, text_size = tbl_size, bgcolor = inside_bg)
     if show_extended
         bgcolor5 = percent_change_from_5_ema > 0 ? #17880b51 : #880b0b50
         bgcolor10 = percent_change_from_10_ema > 0 ? #17880b51 : #880b0b50
