@@ -716,8 +716,16 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         inside_label_tf = isInsideChartCandle ? chart_tf_label : timeframe_label
         inside_h = isInsideChartCandle ? high[2] : twoPriorTfHigh
         inside_l = isInsideChartCandle ? low[2] : twoPriorTfLow
-        table.cell(t, 1, 11, 'Inside ' + inside_label_tf, text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
-        table.cell(t, 2, 11, 'H: ' + str.tostring(inside_h, '#.##') + '  L: ' + str.tostring(inside_l, '#.##'), text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
+        broke_high   = high >= inside_h
+        broke_low    = low  <= inside_l
+        above_h      = broke_high and close >= inside_h
+        faded_h      = broke_high and close <  inside_h
+        below_l      = broke_low  and close <= inside_l
+        reclaimed_l  = broke_low  and close >  inside_l
+        inside_status = above_h ? ' | ↑ Broke High' : faded_h ? ' | ↑ Faded High' : below_l ? ' | ↓ Broke Low' : reclaimed_l ? ' | ↓ Reclaimed Low' : ''
+        inside_bg = above_h ? color.rgb(14, 100, 14, 40) : faded_h ? color.rgb(180, 100, 0, 40) : below_l ? color.rgb(160, 20, 20, 40) : reclaimed_l ? color.rgb(180, 100, 0, 40) : color.rgb(49, 27, 146, 73)
+        table.cell(t, 1, 11, 'Inside ' + inside_label_tf, text_color = txt_col, text_size = tbl_size, bgcolor = inside_bg)
+        table.cell(t, 2, 11, 'H: ' + str.tostring(inside_h, '#.##') + '  L: ' + str.tostring(inside_l, '#.##') + inside_status, text_color = txt_col, text_size = tbl_size, bgcolor = inside_bg)
     if show_extended
         bgcolor5 = percent_change_from_5_ema > 0 ? #17880b51 : #880b0b50
         bgcolor10 = percent_change_from_10_ema > 0 ? #17880b51 : #880b0b50
@@ -1486,3 +1494,43 @@ label2 = hideRSRat == false and barstate.islast ? label.new(bar_index, rs, text 
 // Delete previous Labels (When new candle opens or when replay mode, the labels were piling on)
 label.delete(label1[1])
 label.delete(label2[1])
+
+// ========== WEBHOOK ALERTS ==========
+// Detects transitions (new occurrences) so alerts fire once, not on every bar.
+// To use: Add Alert in TradingView → pick any condition below → paste your webhook URL.
+// The alert message (JSON) is sent as the POST body to your webhook endpoint.
+
+inside_candle_new     = isInsideChartCandle and not isInsideChartCandle[1]
+inside_week_new       = isInsideWeekCandle and not isInsideWeekCandle[1]
+inside_tf_new         = isInsideTfCandle == 'Inside Candle' and isInsideTfCandle[1] != 'Inside Candle'
+swing_lp_new          = swing_launch_pad and not swing_launch_pad[1]
+pos_lp_new            = pos_launch_pad and not pos_launch_pad[1]
+ema_512_bull          = is_ema5_above_ema12 and not is_ema5_above_ema12[1]
+ema_512_bear          = not is_ema5_above_ema12 and is_ema5_above_ema12[1]
+ema_3450_bull         = is_ema34_above_ema50 and not is_ema34_above_ema50[1]
+ema_3450_bear         = not is_ema34_above_ema50 and is_ema34_above_ema50[1]
+
+alertcondition(inside_candle_new, title = '🕯 Inside Candle (Chart TF)',    message = '{"ticker":"{{ticker}}","signal":"inside_candle","close":{{close}},"high":{{high}},"low":{{low}},"time":"{{time}}"}')
+alertcondition(inside_week_new,   title = '📅 Inside Week',                  message = '{"ticker":"{{ticker}}","signal":"inside_week","close":{{close}},"time":"{{time}}"}')
+alertcondition(inside_tf_new,     title = '🕯 Inside TF Candle',             message = '{"ticker":"{{ticker}}","signal":"inside_tf_candle","close":{{close}},"time":"{{time}}"}')
+alertcondition(swing_lp_new,      title = '🚀 Swing Launch Pad',             message = '{"ticker":"{{ticker}}","signal":"swing_launch_pad","close":{{close}},"time":"{{time}}"}')
+alertcondition(pos_lp_new,        title = '🚀 Position Launch Pad',          message = '{"ticker":"{{ticker}}","signal":"pos_launch_pad","close":{{close}},"time":"{{time}}"}')
+alertcondition(ema_512_bull,      title = '📈 5-12 EMA Cloud → Bullish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bullish","close":{{close}},"time":"{{time}}"}')
+alertcondition(ema_512_bear,      title = '📉 5-12 EMA Cloud → Bearish',     message = '{"ticker":"{{ticker}}","signal":"ema_512_bearish","close":{{close}},"time":"{{time}}"}')
+alertcondition(ema_3450_bull,     title = '📈 34-50 EMA Cloud → Bullish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bullish","close":{{close}},"time":"{{time}}"}')
+alertcondition(ema_3450_bear,     title = '📉 34-50 EMA Cloud → Bearish',    message = '{"ticker":"{{ticker}}","signal":"ema_3450_bearish","close":{{close}},"time":"{{time}}"}')
+
+// alert() fires with richer computed payload (symbol, key prices, indicator values).
+// These run alongside alertcondition — both can be active at the same time.
+if inside_candle_new
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"inside_candle","close":' + str.tostring(close) + ',"prev_high":' + str.tostring(high[1]) + ',"prev_low":' + str.tostring(low[1]) + ',"adr":' + str.tostring(math.round(adrp, 2)) + '}', alert.freq_once_per_bar_close)
+if inside_week_new
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"inside_week","close":' + str.tostring(close) + ',"week_high":' + str.tostring(prior_week_high) + ',"week_low":' + str.tostring(prior_week_low) + '}', alert.freq_once_per_bar_close)
+if swing_lp_new
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"swing_launch_pad","close":' + str.tostring(close) + ',"ema5":' + str.tostring(math.round(five_dema, 2)) + ',"ema10":' + str.tostring(math.round(ten_dema, 2)) + ',"ema20":' + str.tostring(math.round(twenty_dema, 2)) + '}', alert.freq_once_per_bar_close)
+if pos_lp_new
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"pos_launch_pad","close":' + str.tostring(close) + ',"ema10":' + str.tostring(math.round(ten_dema, 2)) + ',"ema20":' + str.tostring(math.round(twenty_dema, 2)) + ',"sma50":' + str.tostring(math.round(fifty_dsma, 2)) + '}', alert.freq_once_per_bar_close)
+if ema_512_bull
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"ema_512_bullish","close":' + str.tostring(close) + ',"ema5":' + str.tostring(math.round(ema5, 2)) + ',"ema12":' + str.tostring(math.round(ema12, 2)) + '}', alert.freq_once_per_bar_close)
+if ema_512_bear
+    alert('{"ticker":"' + syminfo.ticker + '","signal":"ema_512_bearish","close":' + str.tostring(close) + ',"ema5":' + str.tostring(math.round(ema5, 2)) + ',"ema12":' + str.tostring(math.round(ema12, 2)) + '}', alert.freq_once_per_bar_close)
