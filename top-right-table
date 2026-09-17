@@ -525,11 +525,10 @@ timeframe_label = candle_timeframe == '30' ? '30 Min' : candle_timeframe == '60'
 
 [yesterdayHigh, yesterdayLow] = request.security(syminfo.tickerid, 'D', [high[1], low[1]])
 
-safe_candle_tf = timeframe.in_seconds() > timeframe.in_seconds(candle_timeframe) ? timeframe.period : candle_timeframe
-[prior_tf_high, twoPriorTfHigh, twoPriorTfLow, prevTfHigh, prevTfLow] = request.security(syminfo.tickerid, safe_candle_tf, [high[1], high[2], low[2], high[1], low[1]])
+[prior_tf_high, twoPriorTfHigh, twoPriorTfLow, prevTfHigh, prevTfLow] = request.security(syminfo.tickerid, candle_timeframe, [high[1], high[2], low[2], high[1], low[1]])
 prior_tf_high_diff = (close - prior_tf_high) / close * 100
 
-isInsideTfCandle = twoPriorTfHigh >= prevTfHigh and twoPriorTfLow <= prevTfLow ? 'Inside Candle' : ''
+isInsideTfCandle = prevTfHigh <= twoPriorTfHigh and prevTfLow >= twoPriorTfLow ? 'Inside Candle' : ''
 
 [prior_week_high, prior_week_low, twoPriorWeekHigh, twoPriorWeekLow] = request.security(syminfo.tickerid, 'W', [high[1], low[1], high[2], low[2]], lookahead=barmerge.lookahead_on)
 
@@ -537,7 +536,7 @@ isInsideTfCandle = twoPriorTfHigh >= prevTfHigh and twoPriorTfLow <= prevTfLow ?
 isInsideWeekCandle = (prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow)
 
 // Fetch timeframe close prices
-close_tf = request.security(syminfo.tickerid, safe_candle_tf, close)
+close_tf = request.security(syminfo.tickerid, candle_timeframe, close)
 
 // Calculate RSI on timeframe data
 rsi_tf = ta.rsi(close_tf, rsi_length)
