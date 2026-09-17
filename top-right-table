@@ -703,21 +703,10 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_projectedVol and show_relVol
         table.cell(t, 1, 8, 'Proj. Vol / Rel. Vol.', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 8, str.tostring(math.round(volume_projected, 2), '0.00') + uP + ' / ' + str.tostring(math.round(relVol)) + '%', text_color = txt_col, text_size = tbl_size)
-    if isInsideWeekCandle or (show_candle_analysis and isInsideTfCandle == 'Inside Candle')
-        //prior_week_high < twoPriorWeekHigh and prior_week_low > twoPriorWeekLow
-        if isInsideWeekCandle
-            insideWeekLabel = isInsideWeekCandle ? "Inside Week (" + str.tostring(prior_week_high) + " - " + str.tostring(prior_week_low) + ")": ""
-            bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
-            table.cell(t, 1, 9, 'Inside Week', text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
-            table.cell(t, 2, 9, insideWeekLabel + ' ' + str.tostring(isInsideTfCandle), text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
-        else
-            bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
-            table.cell(t, 1, 9, timeframe_label + ' / Prior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
-            table.cell(t, 2, 9, str.tostring(isInsideTfCandle) + ' ' + str.tostring(math.round(prior_tf_high, 4)) + ' (' + str.tostring(math.round(prior_tf_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_tf, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
-    else if show_candle_analysis
-        bgcolortf = prior_tf_high_diff > 0 ? #17880b51 : #880b0b50
-        table.cell(t, 1, 9, timeframe_label + ' / Prior High / RSI', text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
-        table.cell(t, 2, 9, str.tostring(isInsideTfCandle) + ' ' + str.tostring(math.round(prior_tf_high, 4)) + ' (' + str.tostring(math.round(prior_tf_high_diff, 2)) + '%) / ' + str.tostring(math.round(rsi_tf, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = bgcolortf)
+    if isInsideWeekCandle
+        insideWeekLabel = "Inside Week (" + str.tostring(prior_week_high) + " - " + str.tostring(prior_week_low) + ")"
+        table.cell(t, 1, 9, 'Inside Week', text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
+        table.cell(t, 2, 9, insideWeekLabel, text_color = txt_col, text_size = tbl_size, bgcolor = color.rgb(49, 27, 146, 73))
     if show_volBuzz
         table.cell(t, 1, 10, 'Vol. Buzz', text_color = txt_col, text_size = tbl_size)
         table.cell(t, 2, 10, str.tostring(math.round(volBuzz)) + '%', text_color = txt_col, text_size = tbl_size)
@@ -970,6 +959,13 @@ if not na(ema_label)
     label.delete(ema_label)
 if not remove_floats
     ema_label := label.new(bar_index + float_offset, low[1] + 2 * atr, ema_values_text, style = label.style_label_left, color = bgcolor20, textcolor = color.white)
+
+var label inside_candle_label = na
+if not na(inside_candle_label)
+    label.delete(inside_candle_label)
+if show_candle_analysis and isInsideTfCandle == 'Inside Candle'
+    inside_candle_text = 'Inside ' + timeframe_label + '\nH: ' + str.tostring(twoPriorTfHigh, '#.####') + '  L: ' + str.tostring(twoPriorTfLow, '#.####')
+    inside_candle_label := label.new(bar_index + float_offset, high[1] + atr, inside_candle_text, style = label.style_label_left, color = color.rgb(49, 27, 146, 60), textcolor = color.white)
 
 bgcolorlod = low[1] < close ? color.rgb(14, 61, 9, 4) : color.rgb(104, 11, 11, 16)
 
