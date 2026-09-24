@@ -18,62 +18,62 @@ indicator(title = 'Swing Dashboard', shorttitle = 'Swing Data', overlay = true)
 // ========== SIMPLIFIED VIEW ==========
 simplified_view = input.bool(false, title = 'Simplified View', group = '🔍 Simplified View', tooltip = 'When enabled, hides everything except the 5/10/20 EMA lines, the MA Structure band, and ADR%')
 
-// ========== BOTTOM RIGHT TABLE CONTENT ==========
-tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large], group = '📊 Top Right Table Content', tooltip = 'Size of the information table')
-bg_col = input(#00000000, title = 'Table Background Color', group = '📊 Top Right Table Content', tooltip = 'Background color for the information table')
-txt_col = input(color.rgb(0, 0, 0), title = 'Table Text Color', group = '📊 Top Right Table Content', tooltip = 'Text color for the information table')
-show_empty_row = input(true, title = 'Add Empty Row Above Values', group = '📊 Top Right Table Content', tooltip = 'Prevents pane icons from overlapping with table text when multiple panes are shown')
+// ========== TOP TABLE: STYLE ==========
+tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large], group = '📊 Table: Style', tooltip = 'Size of the information table')
+bg_col = input(#00000000, title = 'Table Background Color', group = '📊 Table: Style', tooltip = 'Background color for the information table')
+txt_col = input(color.rgb(0, 0, 0), title = 'Table Text Color', group = '📊 Table: Style', tooltip = 'Text color for the information table')
+show_empty_row = input(true, title = 'Add Empty Row Above Values', group = '📊 Table: Style', tooltip = 'Prevents pane icons from overlapping with table text when multiple panes are shown')
 
 // Market Data Items
-show_adrp_raw = input(true, title = 'Show ADR%', group = '📊 Top Right Table Content', tooltip = 'Displays Average Daily Range percentage in the main table')
+show_adrp_raw = input(true, title = 'Show ADR%', group = '📊 Table: Market Data', tooltip = 'Displays Average Daily Range percentage in the main table')
 show_adrp = simplified_view ? true : show_adrp_raw
-adrp_len = input(20, title = 'ADR% Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars used in ADR% calculation')
-show_atr_raw = input(false, title = 'Show ATR', group = '📊 Top Right Table Content', tooltip = 'Displays Average True Range in the main table')
+adrp_len = input(20, title = 'ADR% Length', group = '📊 Table: Market Data', tooltip = 'Number of daily bars used in ADR% calculation')
+show_atr_raw = input(false, title = 'Show ATR', group = '📊 Table: Market Data', tooltip = 'Displays Average True Range in the main table')
 show_atr = simplified_view ? false : show_atr_raw
-atr_len = input(14, title = 'ATR Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars used in ATR calculation')
-show_lod_dist_raw = input(true, title = 'Show LoD Distance', group = '📊 Top Right Table Content', tooltip = 'Displays distance from Low of Day in the main table')
+atr_len = input(14, title = 'ATR Length', group = '📊 Table: Market Data', tooltip = 'Number of daily bars used in ATR calculation')
+show_lod_dist_raw = input(true, title = 'Show LoD Distance', group = '📊 Table: Market Data', tooltip = 'Displays distance from Low of Day in the main table')
 show_lod_dist = simplified_view ? false : show_lod_dist_raw
-show_mktCap_raw = input(false, title = 'Show Market Cap', group = '📊 Top Right Table Content', tooltip = 'Displays Market Capitalization in the main table')
+show_mktCap_raw = input(false, title = 'Show Market Cap', group = '📊 Table: Market Data', tooltip = 'Displays Market Capitalization in the main table')
 show_mktCap = simplified_view ? false : show_mktCap_raw
-show_floatpercent_raw = input(false, title = 'Show Float %', group = '📊 Top Right Table Content', tooltip = 'Displays Float percentage in the main table')
+show_floatpercent_raw = input(false, title = 'Show Float %', group = '📊 Table: Market Data', tooltip = 'Displays Float percentage in the main table')
 show_floatpercent = simplified_view ? false : show_floatpercent_raw
 
 // Volume Analysis Items
-show_ADV_raw = input(true, title = 'Show Average Daily Volume', group = '📊 Top Right Table Content', tooltip = 'Displays average daily volume in the main table')
+show_ADV_raw = input(true, title = 'Show Average Daily Volume', group = '📊 Table: Volume', tooltip = 'Displays average daily volume in the main table')
 show_ADV = simplified_view ? false : show_ADV_raw
-show_ADVS_raw = input(false, title = 'Show Average Daily $ Volume', group = '📊 Top Right Table Content', tooltip = 'Displays average daily dollar volume in the main table')
+show_ADVS_raw = input(false, title = 'Show Average Daily $ Volume', group = '📊 Table: Volume', tooltip = 'Displays average daily dollar volume in the main table')
 show_ADVS = simplified_view ? false : show_ADVS_raw
-len = input(50, title = 'Volume MA Length', group = '📊 Top Right Table Content', tooltip = 'Number of daily bars for volume moving average calculation')
-show_relVol_raw = input(true, title = 'Show Relative Volume', group = '📊 Top Right Table Content', tooltip = 'Displays relative volume in the main table')
+len = input(50, title = 'Volume MA Length', group = '📊 Table: Volume', tooltip = 'Number of daily bars for volume moving average calculation')
+show_relVol_raw = input(true, title = 'Show Relative Volume', group = '📊 Table: Volume', tooltip = 'Displays relative volume in the main table')
 show_relVol = simplified_view ? false : show_relVol_raw
-show_projectedVol_raw = input(true, title = 'Show Projected Volume', group = '📊 Top Right Table Content', tooltip = 'Displays projected volume in the main table')
+show_projectedVol_raw = input(true, title = 'Show Projected Volume', group = '📊 Table: Volume', tooltip = 'Displays projected volume in the main table')
 show_projectedVol = simplified_view ? false : show_projectedVol_raw
-show_volBuzz_raw = input(false, title = 'Show Volume Buzz', group = '📊 Top Right Table Content', tooltip = 'Displays volume buzz indicator in the main table')
+show_volBuzz_raw = input(false, title = 'Show Volume Buzz', group = '📊 Table: Volume', tooltip = 'Displays volume buzz indicator in the main table')
 show_volBuzz = simplified_view ? false : show_volBuzz_raw
 
 // ========== PRICE ACTION ANALYSIS ==========
 // Candle Analysis Items
-show_candle_analysis_raw = input(true, title = 'Show Inside Candle Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays inside candle analysis with timeframe')
+show_candle_analysis_raw = input(true, title = 'Show Inside Candle Analysis', group = '📊 Table: Candle & RSI Analysis', tooltip = 'Displays inside candle analysis with timeframe')
 show_candle_analysis = simplified_view ? false : show_candle_analysis_raw
-candle_timeframe = input.string('30', title = 'Inside Candle Timeframe', options = ['30', '60', '240'], group = '📊 Top Right Table Content', tooltip = 'Select timeframe for candle analysis: 30=30min, 60=1hour, 240=4hour')
-rsi_length = input.int(14, title = 'RSI Length', group = '📊 Top Right Table Content', tooltip = 'RSI period length for inside candle analysis calculations')
+candle_timeframe = input.string('30', title = 'Inside Candle Timeframe', options = ['30', '60', '240'], group = '📊 Table: Candle & RSI Analysis', tooltip = 'Select timeframe for candle analysis: 30=30min, 60=1hour, 240=4hour')
+rsi_length = input.int(14, title = 'RSI Length', group = '📊 Table: Candle & RSI Analysis', tooltip = 'RSI period length for inside candle analysis calculations')
 
 // Volume Bar Analysis Items
-show_volume_bar_analysis_raw = input(true, title = 'Show Volume Bar Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays percentage of green vs red completed bars for current chart timeframe')
+show_volume_bar_analysis_raw = input(true, title = 'Show Volume Bar Analysis', group = '📊 Table: Volume', tooltip = 'Displays percentage of green vs red completed bars for current chart timeframe')
 show_volume_bar_analysis = simplified_view ? false : show_volume_bar_analysis_raw
-volume_analysis_length = input.int(20, title = 'Volume Analysis Length', minval = 5, maxval = 100, group = '📊 Top Right Table Content', tooltip = 'Number of completed bars to analyze for green/red percentage')
+volume_analysis_length = input.int(20, title = 'Volume Analysis Length', minval = 5, maxval = 100, group = '📊 Table: Volume', tooltip = 'Number of completed bars to analyze for green/red percentage')
 
 // Cloud & Trend Analysis Table Items
-show_clouds_raw = input(true, title = 'Show Market Breadth Table', group = '📊 Bottom Right Table Content', tooltip = 'Displays market breadth table showing % of stocks above key MAs (5%, 20%) and trade conditions')
+show_clouds_raw = input(true, title = 'Show Market Breadth Table', group = '📊 Bottom Table: Content', tooltip = 'Displays market breadth table showing % of stocks above key MAs (5%, 20%) and trade conditions')
 show_clouds = simplified_view ? false : show_clouds_raw
-show_trend_cloud_labels_raw = input.bool(true, title = 'Show EMA Cloud Trends Table', group = '📊 Bottom Right Table Content', tooltip = 'Shows EMA cloud trends (5-12, 34-50) and VIX volatility trends in table format')
+show_trend_cloud_labels_raw = input.bool(true, title = 'Show EMA Cloud Trends Table', group = '📊 Bottom Table: Content', tooltip = 'Shows EMA cloud trends (5-12, 34-50) and VIX volatility trends in table format')
 show_trend_cloud_labels = simplified_view ? false : show_trend_cloud_labels_raw
-show_three_ema_raw = input(false, title = 'Show 3 EMA + RSI / 4 EMA', group = '📊 Bottom Right Table Content', tooltip = 'Displays 3 EMA analysis with RSI and 4 EMA data in the main table')
+show_three_ema_raw = input(false, title = 'Show 3 EMA + RSI / 4 EMA', group = '📊 Bottom Table: Content', tooltip = 'Displays 3 EMA analysis with RSI and 4 EMA data in the main table')
 show_three_ema = simplified_view ? false : show_three_ema_raw
-ema5_length = input.int(5, title = 'EMA 5 Length', group = '🌥️ Cloud & Trend Analysis')
-ema12_length = input.int(12, title = 'EMA 12 Length', group = '🌥️ Cloud & Trend Analysis')
-ema34_length = input.int(34, title = 'EMA 34 Length', group = '🌥️ Cloud & Trend Analysis')
-ema50_length = input.int(50, title = 'EMA 50 Length', group = '🌥️ Cloud & Trend Analysis')
+ema5_length = input.int(5, title = 'EMA 5 Length', group = '📊 Bottom Table: EMA Lengths')
+ema12_length = input.int(12, title = 'EMA 12 Length', group = '📊 Bottom Table: EMA Lengths')
+ema34_length = input.int(34, title = 'EMA 34 Length', group = '📊 Bottom Table: EMA Lengths')
+ema50_length = input.int(50, title = 'EMA 50 Length', group = '📊 Bottom Table: EMA Lengths')
 
 // Simple 5/10/20 EMA lines
 show_simple_emas_raw = input.bool(true, title = 'Show 5/10/20 EMA Lines', group = '📈 5/10/20 EMA Lines')
@@ -83,89 +83,89 @@ simple_ema10_length = input.int(10, title = '10 EMA Length', group = '📈 5/10/
 simple_ema20_length = input.int(20, title = '20 EMA Length', group = '📈 5/10/20 EMA Lines')
 
 // Market Breadth Items
-show_market_breadth_raw = input(false, title = 'Show Market Breadth Symbols', group = '📊 Bottom Right Table Content', tooltip = 'Displays market breadth symbols (% above VWAP, TICK, etc.) in the main table')
+show_market_breadth_raw = input(false, title = 'Show Market Breadth Symbols', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Displays market breadth symbols (% above VWAP, TICK, etc.) in the main table')
 show_market_breadth = simplified_view ? false : show_market_breadth_raw
-symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = '% Above VWAP Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % of stocks above VWAP')
-symbolToPull1 = input.symbol('TICK', title = 'TICK Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for TICK index')
-symbolToPull2 = input.symbol('S5TW', title = '% Above 20 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 20-day SMA')
-symbolToPull3 = input.symbol('NDFD', title = '% Above 5 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 5-day SMA')
-symbolToPull4 = input.symbol('S5TH', title = '% Above 200 SMA Symbol', group = '📊 Bottom Right Table Content', tooltip = 'Symbol for % above 200-day SMA')
+symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = '% Above VWAP Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % of stocks above VWAP')
+symbolToPull1 = input.symbol('TICK', title = 'TICK Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for TICK index')
+symbolToPull2 = input.symbol('S5TW', title = '% Above 20 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 20-day SMA')
+symbolToPull3 = input.symbol('NDFD', title = '% Above 5 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 5-day SMA')
+symbolToPull4 = input.symbol('S5TH', title = '% Above 200 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 200-day SMA')
 
 // Advanced Feature Items
-show_extended_raw = input(true, title = 'Show Extended MA Analysis', group = '📊 Top Right Table Content', tooltip = 'Displays extended moving Average analysis in the main table')
+show_extended_raw = input(true, title = 'Show Extended MA Analysis', group = '📊 Table: Advanced Features', tooltip = 'Displays extended moving Average analysis in the main table')
 show_extended = simplified_view ? false : show_extended_raw
-extended_ema_input = input(20, title = 'Extended EMA Length', group = '📊 Top Right Table Content', tooltip = 'Which EMA to show extension from')
-extended_sma_input = input(50, title = 'Extended SMA Length', group = '📊 Top Right Table Content', tooltip = 'Which SMA to show extension from')
-show_launch_pad_raw = input(false, title = 'Show Launch Pad Detection', group = '📊 Top Right Table Content', tooltip = 'Displays launch pad detection signals: Swing Launch Pad (5/10/20 EMAs within 3.5%) and Position Launch Pad (50 SMA + 10/20 EMAs within 3%)')
+extended_ema_input = input(20, title = 'Extended EMA Length', group = '📊 Table: Advanced Features', tooltip = 'Which EMA to show extension from')
+extended_sma_input = input(50, title = 'Extended SMA Length', group = '📊 Table: Advanced Features', tooltip = 'Which SMA to show extension from')
+show_launch_pad_raw = input(false, title = 'Show Launch Pad Detection', group = '📊 Table: Advanced Features', tooltip = 'Displays launch pad detection signals: Swing Launch Pad (5/10/20 EMAs within 3.5%) and Position Launch Pad (50 SMA + 10/20 EMAs within 3%)')
 show_launch_pad = simplified_view ? false : show_launch_pad_raw
-launch_pad_bg_color = input(color.navy, title = 'Launch Pad Background Color', group = '📊 Top Right Table Content', tooltip = 'Background color for launch pad detection rows when active')
-show_launch_pad_prices_raw = input(false, title = 'Show Launch Pad Prices', group = '📊 Top Right Table Content', tooltip = 'Display actual EMA/SMA prices in launch pad setup. When disabled, shows only MA labels and spread percentage')
+launch_pad_bg_color = input(color.navy, title = 'Launch Pad Background Color', group = '📊 Table: Advanced Features', tooltip = 'Background color for launch pad detection rows when active')
+show_launch_pad_prices_raw = input(false, title = 'Show Launch Pad Prices', group = '📊 Table: Advanced Features', tooltip = 'Display actual EMA/SMA prices in launch pad setup. When disabled, shows only MA labels and spread percentage')
 show_launch_pad_prices = simplified_view ? false : show_launch_pad_prices_raw
-show_fundamentals_raw = input(false, title = 'Show Fundamentals', group = '📊 Top Right Table Content', tooltip = 'Displays fundamental data (PE, EBIDTA) in the main table')
+show_fundamentals_raw = input(false, title = 'Show Fundamentals', group = '📊 Table: Advanced Features', tooltip = 'Displays fundamental data (PE, EBIDTA) in the main table')
 show_fundamentals = simplified_view ? false : show_fundamentals_raw
-show_sector_raw = input(true, title = 'Show Sector', group = '📊 Top Right Table Content', tooltip = 'Displays stock sector information in the main table')
+show_sector_raw = input(true, title = 'Show Sector', group = '📊 Table: Advanced Features', tooltip = 'Displays stock sector information in the main table')
 show_sector = simplified_view ? false : show_sector_raw
-show_ind_raw = input(true, title = 'Show Industry Group', group = '📊 Top Right Table Content', tooltip = 'Displays stock industry group information in the main table')
+show_ind_raw = input(true, title = 'Show Industry Group', group = '📊 Table: Advanced Features', tooltip = 'Displays stock industry group information in the main table')
 show_ind = simplified_view ? false : show_ind_raw
 
 // ========== VISUAL CUSTOMIZATION ==========
-remove_floats_raw = input(false, title = 'Remove Right Sided Floating Prices', group = '🎨 Visual Customization')
-remove_floats = simplified_view ? true : remove_floats_raw
-float_offset = input(15, title = 'Float Offset (bars)', group = '🎨 Visual Customization')
-showLabels = input.bool(true, title = 'Show Pivot Labels (R1/Pivot/S1/S2)', group = '🎨 Visual Customization')
-show_bb_label = input.bool(true, title = 'Show Multi-Timeframe BB Label', group = '🎨 Visual Customization')
-show_ema_label = input.bool(true, title = 'Show EMA % Label (incl. 20 EMA Hourly)', group = '🎨 Visual Customization')
-hide_clouds_raw = input(false, title = 'Hide Chart Cloud Fill', group = '🎨 Visual Customization')
-hide_clouds = simplified_view ? true : hide_clouds_raw
-show_longer_ma_raw = input(false, title = 'Show Longer MAs', group = '🎨 Visual Customization')
-show_longer_ma = simplified_view ? false : show_longer_ma_raw
-show_rsrating_raw = input(true, title = 'Hide RS Rating', group = '🎨 Visual Customization')
-show_rsrating = simplified_view ? true : show_rsrating_raw
-show_4_ema_raw = input(false, title = 'Show 4 EMA on Chart', group = '🎨 Visual Customization')
-show_4_ema = simplified_view ? false : show_4_ema_raw
-show_bb_dots_raw = input(false, title = 'Show BB Dots (30m/1hr)', group = '🎨 Visual Customization')
+remove_floats_raw = input(false, title = 'Remove Right Sided Floating Prices', group = '🎨 Floating Price Labels', tooltip = 'Master switch: hides all floating labels (pivot, BB, EMA) regardless of the toggles below')
+float_offset = input(15, title = 'Float Offset (bars)', group = '🎨 Floating Price Labels')
+showLabels = input.bool(true, title = 'Show Pivot Labels (R1/Pivot/S1/S2)', group = '🎨 Floating Price Labels')
+show_bb_label = input.bool(true, title = 'Show Multi-Timeframe BB Label', group = '🎨 Floating Price Labels')
+show_ema_label = input.bool(true, title = 'Show EMA % Label (incl. 20 EMA Hourly)', group = '🎨 Floating Price Labels')
+show_bb_dots_raw = input(false, title = 'Show BB Dots (30m/1hr)', group = '🎨 Floating Price Labels')
 show_bb_dots = simplified_view ? false : show_bb_dots_raw
+remove_floats = simplified_view ? true : remove_floats_raw
+hide_clouds_raw = input(false, title = 'Hide Chart Cloud Fill', group = '🎨 Chart Display')
+hide_clouds = simplified_view ? true : hide_clouds_raw
+show_longer_ma_raw = input(false, title = 'Show Longer MAs', group = '🎨 Chart Display')
+show_longer_ma = simplified_view ? false : show_longer_ma_raw
+show_rsrating_raw = input(true, title = 'Hide RS Rating', group = '🎨 Chart Display')
+show_rsrating = simplified_view ? true : show_rsrating_raw
+show_4_ema_raw = input(false, title = 'Show 4 EMA on Chart', group = '🎨 Chart Display')
+show_4_ema = simplified_view ? false : show_4_ema_raw
 
 // ========== RMV SETTINGS ==========
-cleanup = input(true, title = 'Hide Background Colors & Visual Effects', group = '📊 RMV Settings', tooltip = 'When enabled, hides background colors including: RMV (Range Movement Velocity) background zones, chart fills, and other visual effects for cleaner chart appearance')
+cleanup = input(true, title = 'Hide Background Colors & Visual Effects', group = '📉 RMV (Volatility)', tooltip = 'When enabled, hides background colors including: RMV (Range Movement Velocity) background zones, chart fills, and other visual effects for cleaner chart appearance')
 
 // RMV (Range Movement Velocity) Settings
-atrLength1 = input(3, title = 'RMV - ATR Length 1', group = '📊 RMV Settings', tooltip = 'ATR period 1 for RMV calculation (shorter = more sensitive)')
-atrLength2 = input(5, title = 'RMV - ATR Length 2', group = '📊 RMV Settings', tooltip = 'ATR period 2 for RMV calculation (medium sensitivity)')
-atrLength3 = input(8, title = 'RMV - ATR Length 3', group = '📊 RMV Settings', tooltip = 'ATR period 3 for RMV calculation (longer = smoother)')
-normLength = input(5, title = 'RMV - Normalization Lookback', group = '📊 RMV Settings', tooltip = 'Lookback period for RMV normalization (higher = more stable baseline)')
-showCross = input(true, title = 'RMV - Show Below Bars', group = '📊 RMV Settings', tooltip = 'Show RMV signal diamonds below bars when volatility is low')
-showBackgroundRMV = input(true, title = 'RMV - Show Background', group = '📊 RMV Settings', tooltip = 'Enable RMV background color zones based on volatility levels')
+atrLength1 = input(3, title = 'RMV - ATR Length 1', group = '📉 RMV (Volatility)', tooltip = 'ATR period 1 for RMV calculation (shorter = more sensitive)')
+atrLength2 = input(5, title = 'RMV - ATR Length 2', group = '📉 RMV (Volatility)', tooltip = 'ATR period 2 for RMV calculation (medium sensitivity)')
+atrLength3 = input(8, title = 'RMV - ATR Length 3', group = '📉 RMV (Volatility)', tooltip = 'ATR period 3 for RMV calculation (longer = smoother)')
+normLength = input(5, title = 'RMV - Normalization Lookback', group = '📉 RMV (Volatility)', tooltip = 'Lookback period for RMV normalization (higher = more stable baseline)')
+showCross = input(true, title = 'RMV - Show Below Bars', group = '📉 RMV (Volatility)', tooltip = 'Show RMV signal diamonds below bars when volatility is low')
+showBackgroundRMV = input(true, title = 'RMV - Show Background', group = '📉 RMV (Volatility)', tooltip = 'Enable RMV background color zones based on volatility levels')
 
 // ========== EMA CLOUD SETTINGS ==========
-matype = input.string('EMA', title = 'MA Type', options = ['EMA', 'SMA'], group = '🌥️ Cloud & Trend Analysis', tooltip = 'Moving average type for EMA clouds')
-ma_len1 = input.int(8, title = 'Short EMA1 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len2 = input.int(9, title = 'Long EMA1 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len3 = input.int(5, title = 'Short EMA2 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len4 = input.int(13, title = 'Long EMA2 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len5 = input.int(34, title = 'Short EMA3 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len6 = input.int(50, title = 'Long EMA3 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len7 = input.int(72, title = 'Short EMA4 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len8 = input.int(89, title = 'Long EMA4 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len9 = input.int(180, title = 'Short EMA5 Length', group = '🌥️ Cloud & Trend Analysis')
-ma_len10 = input.int(200, title = 'Long EMA5 Length', group = '🌥️ Cloud & Trend Analysis')
-src = input.source(hl2, title = 'Source', group = '🌥️ Cloud & Trend Analysis')
-ma_offset = input.int(0, title = 'Offset', group = '🌥️ Cloud & Trend Analysis')
-showlong = input.bool(false, title = 'Show Long Alerts', group = '🌥️ Cloud & Trend Analysis')
-showshort = input.bool(false, title = 'Show Short Alerts', group = '🌥️ Cloud & Trend Analysis')
-showLine_raw = input.bool(false, title = 'Display EMA Lines', group = '🌥️ Cloud & Trend Analysis')
+matype = input.string('EMA', title = 'MA Type', options = ['EMA', 'SMA'], group = '🌥️ Ripster EMA Clouds (Chart)', tooltip = 'Moving average type for EMA clouds')
+ma_len1 = input.int(8, title = 'Short EMA1 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len2 = input.int(9, title = 'Long EMA1 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len3 = input.int(5, title = 'Short EMA2 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len4 = input.int(13, title = 'Long EMA2 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len5 = input.int(34, title = 'Short EMA3 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len6 = input.int(50, title = 'Long EMA3 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len7 = input.int(72, title = 'Short EMA4 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len8 = input.int(89, title = 'Long EMA4 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len9 = input.int(180, title = 'Short EMA5 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_len10 = input.int(200, title = 'Long EMA5 Length', group = '🌥️ Ripster EMA Clouds (Chart)')
+src = input.source(hl2, title = 'Source', group = '🌥️ Ripster EMA Clouds (Chart)')
+ma_offset = input.int(0, title = 'Offset', group = '🌥️ Ripster EMA Clouds (Chart)')
+showlong = input.bool(false, title = 'Show Long Alerts', group = '🌥️ Ripster EMA Clouds (Chart)')
+showshort = input.bool(false, title = 'Show Short Alerts', group = '🌥️ Ripster EMA Clouds (Chart)')
+showLine_raw = input.bool(false, title = 'Display EMA Lines', group = '🌥️ Ripster EMA Clouds (Chart)')
 showLine = simplified_view ? false : showLine_raw
-ema1_raw = input.bool(true, title = 'Show EMA Cloud-1', group = '🌥️ Cloud & Trend Analysis')
+ema1_raw = input.bool(true, title = 'Show EMA Cloud-1', group = '🌥️ Ripster EMA Clouds (Chart)')
 ema1 = simplified_view ? false : ema1_raw
-ema2_raw = input.bool(true, title = 'Show EMA Cloud-2', group = '🌥️ Cloud & Trend Analysis')
+ema2_raw = input.bool(true, title = 'Show EMA Cloud-2', group = '🌥️ Ripster EMA Clouds (Chart)')
 ema2 = simplified_view ? false : ema2_raw
-ema3_raw = input.bool(false, title = 'Show EMA Cloud-3', group = '🌥️ Cloud & Trend Analysis')
+ema3_raw = input.bool(false, title = 'Show EMA Cloud-3', group = '🌥️ Ripster EMA Clouds (Chart)')
 ema3 = simplified_view ? false : ema3_raw
-ema4_raw = input.bool(true, title = 'Show EMA Cloud-4', group = '🌥️ Cloud & Trend Analysis')
+ema4_raw = input.bool(true, title = 'Show EMA Cloud-4', group = '🌥️ Ripster EMA Clouds (Chart)')
 ema4 = simplified_view ? false : ema4_raw
-ema5c_raw = input.bool(true, title = 'Show EMA Cloud-5', group = '🌥️ Cloud & Trend Analysis')
+ema5c_raw = input.bool(true, title = 'Show EMA Cloud-5', group = '🌥️ Ripster EMA Clouds (Chart)')
 ema5c = simplified_view ? false : ema5c_raw
-emacloudleading = input.int(0, minval = 0, title = 'Leading Period For EMA Cloud', group = '🌥️ Cloud & Trend Analysis')
+emacloudleading = input.int(0, minval = 0, title = 'Leading Period For EMA Cloud', group = '🌥️ Ripster EMA Clouds (Chart)')
 
 // ========== BOLLINGER BANDS ==========
 length = input.int(20, title = 'BB Length', minval = 1, group = '📊 Bollinger Bands', tooltip = 'Length for Bollinger Band calculation')
@@ -175,23 +175,23 @@ upper_band_color = input.color(#4caf4f00, title = 'Upper Band Color', group = '�
 lower_band_color = input.color(#4caf4f00, title = 'Lower Band Color', group = '📊 Bollinger Bands', tooltip = 'Color for lower Bollinger Band line')
 
 // ========== MA STRUCTURE SETTINGS ==========
-show_ma_structure_raw = input.bool(true, title = 'Show MA Structure', group = 'MA Structure Settings')
+show_ma_structure_raw = input.bool(true, title = 'Show MA Structure', group = '📐 MA Structure')
 show_ma_structure = simplified_view ? true : show_ma_structure_raw
-ma_structure_daily_length = input.int(21, title = 'Daily MA Length', minval = 1, group = 'MA Structure Settings')
-ma_structure_daily_type = input.string('EMA', title = 'Daily MA Type', options = ['SMA', 'EMA'], group = 'MA Structure Settings')
-ma_structure_weekly_length = input.int(10, title = 'Weekly MA Length', minval = 1, group = 'MA Structure Settings')
-ma_structure_weekly_type = input.string('SMA', title = 'Weekly MA Type', options = ['SMA', 'EMA'], group = 'MA Structure Settings')
-ma_structure_change_bar_color = input.bool(false, title = 'Change Bar Color', group = 'MA Structure Settings')
-ma_structure_use_high_below = input.bool(true, title = 'Use High Below Structure for Bearish', tooltip = 'When enabled, bars turn bearish when HIGH is below the lowest MA. When disabled, only uses close below all MAs.', group = 'MA Structure Settings')
-ma_structure_line_size = input.int(1, title = 'Line Size', minval = 1, group = 'MA Structure Settings')
-ma_structure_use_custom_colors = input.bool(true, title = 'Use Custom Colors', tooltip = 'When enabled, uses custom colors for MA lines. When disabled, uses default gray colors.', group = 'MA Structure Settings')
-ma_structure_high_color = input.color(color.gray, title = 'High MA Color', group = 'MA Structure Settings')
-ma_structure_close_color_up = input.color(color.rgb(197, 197, 197), title = 'Close MA Uptrend Color', group = 'MA Structure Settings')
-ma_structure_close_color_down = input.color(color.rgb(255, 0, 255), title = 'Close MA Downtrend Color', group = 'MA Structure Settings')
-ma_structure_low_color = input.color(color.gray, title = 'Low MA Color', group = 'MA Structure Settings')
-ma_structure_bullish_color = input.color(color.rgb(0, 0, 0), title = 'Bullish Candle Color', group = 'MA Structure Settings')
-ma_structure_bearish_color = input.color(color.rgb(255, 0, 255), title = 'Bearish Candle Color', group = 'MA Structure Settings')
-ma_structure_cloud_color = input.color(color.rgb(120, 123, 134, 64), title = 'Cloud Color', group = 'MA Structure Settings')
+ma_structure_daily_length = input.int(21, title = 'Daily MA Length', minval = 1, group = '📐 MA Structure')
+ma_structure_daily_type = input.string('EMA', title = 'Daily MA Type', options = ['SMA', 'EMA'], group = '📐 MA Structure')
+ma_structure_weekly_length = input.int(10, title = 'Weekly MA Length', minval = 1, group = '📐 MA Structure')
+ma_structure_weekly_type = input.string('SMA', title = 'Weekly MA Type', options = ['SMA', 'EMA'], group = '📐 MA Structure')
+ma_structure_change_bar_color = input.bool(false, title = 'Change Bar Color', group = '📐 MA Structure')
+ma_structure_use_high_below = input.bool(true, title = 'Use High Below Structure for Bearish', tooltip = 'When enabled, bars turn bearish when HIGH is below the lowest MA. When disabled, only uses close below all MAs.', group = '📐 MA Structure')
+ma_structure_line_size = input.int(1, title = 'Line Size', minval = 1, group = '📐 MA Structure')
+ma_structure_use_custom_colors = input.bool(true, title = 'Use Custom Colors', tooltip = 'When enabled, uses custom colors for MA lines. When disabled, uses default gray colors.', group = '📐 MA Structure')
+ma_structure_high_color = input.color(color.gray, title = 'High MA Color', group = '📐 MA Structure')
+ma_structure_close_color_up = input.color(color.rgb(197, 197, 197), title = 'Close MA Uptrend Color', group = '📐 MA Structure')
+ma_structure_close_color_down = input.color(color.rgb(255, 0, 255), title = 'Close MA Downtrend Color', group = '📐 MA Structure')
+ma_structure_low_color = input.color(color.gray, title = 'Low MA Color', group = '📐 MA Structure')
+ma_structure_bullish_color = input.color(color.rgb(0, 0, 0), title = 'Bullish Candle Color', group = '📐 MA Structure')
+ma_structure_bearish_color = input.color(color.rgb(255, 0, 255), title = 'Bearish Candle Color', group = '📐 MA Structure')
+ma_structure_cloud_color = input.color(color.rgb(120, 123, 134, 64), title = 'Cloud Color', group = '📐 MA Structure')
 
 
 arp = 100 * (ta.sma(high / low, adrp_len) - 1)
@@ -1100,46 +1100,46 @@ comparativeTickerId = 'SP:SPX' // For RS Score Calculation, the SPX Value only m
 // = is_30min_60min ? na : cloudcolour2
 
 // Inputs
-hideRSRat = input(false, title = 'Hide Rating', group = 'RS Line')
-ratingOnly = input(false, title = 'Rating Only', group = 'RS Line')
+hideRSRat = input(false, title = 'Hide Rating', group = '📶 RS Rating: Line')
+ratingOnly = input(false, title = 'Rating Only', group = '📶 RS Rating: Line')
 // seedetail   = input(false, title='Display the 3 results', group = 'Parameters', inline='0')
-colorRS = input(color.rgb(0, 0, 255, 50), title = 'Color', group = 'RS Line', inline = 'a')
-lineTicker = input('SP:SPX', title = 'Comparative Symbol for Line', group = 'Shape & Offset', tooltip = 'Reference ticker used for calculation of the RS Line.')
-SpxValue = input(4200, title = 'Approximate Value of Comparative Symbol', group = 'Shape & Offset', tooltip = 'Used to gather a constant value')
-offset = input.int(80, minval = 0, maxval = 2000, title = 'Offset (%)', group = 'Shape & Offset', tooltip = 'Used to display the RS Line under the price.')
-plotNewHigh = input(true, title = 'Plot RS New Highs', group = 'RS Line New High')
-rsNewHigh = input.string('RS New Highs', title = 'Type', options = ['RS New Highs', 'RS New Highs Before Price', 'Historical RS New Highs', 'Historical RS New Highs  Before Price'], group = 'RS Line New High', inline = 'b')
-blueDotCol = input(color.rgb(121, 213, 242, 62), title = 'Color', group = 'RS Line New High', inline = 'b')
-lookback = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Highs.', inline = 'b')
-sizeLabHigh = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
-plotNewLow = input(false, title = 'Plot RS New Lows', group = 'RS Line New High')
-rsNewLow = input.string('Historical RS New Lows', title = 'Type', options = ['RS New Lows', 'RS New Lows Before Price', 'Historical RS New Lows', 'Historical RS New Lows  Before Price'], group = 'RS Line New High', inline = 'x')
-redDotCol = input(color.rgb(255, 82, 82, 62), title = 'Color', group = 'RS Line New High', inline = 'x')
-lookback2 = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = 'RS Line New High', tooltip = 'The lookback for calculation of price and RS New Lows.', inline = 'x')
-sizeLabLow = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'RS Line New High')
-boolMa = input(false, title = 'Display MA 1 on RS Line', group = '1st MA on RS Line')
-lenMa = input(21, title = 'Lenght Da', group = '1st MA on RS Line', inline = 'c')
-colMa = input(color.orange, title = 'Color', group = '1st MA on RS Line', inline = 'c')
-typMa = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
-lenMaWe = input(10, title = 'Lenght We', group = '1st MA on RS Line', inline = 'c')
-typMaWe = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '1st MA on RS Line', inline = 'c')
-fillMa = input(false, title = 'Area Color', group = '1st MA on RS Line')
-posCol = input(color.rgb(0, 230, 119, 75), title = 'Positive Area', group = '1st MA on RS Line', inline = 'd')
-negCol = input(color.rgb(255, 82, 82, 75), title = 'Negative Area', group = '1st MA on RS Line', inline = 'd')
-boolMa2 = input(false, title = 'Display MA 2 on RS Line', group = '2nd MA on RS Line')
-lenMa2 = input(50, title = 'Lenght Da', group = '2nd MA on RS Line', inline = 'c')
-colMa2 = input(color.red, title = 'Color', group = '2nd MA on RS Line', inline = 'c')
-typMa2 = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
-lenMa2We = input(21, title = 'Lenght We', group = '2nd MA on RS Line', inline = 'c')
-typMa2We = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '2nd MA on RS Line', inline = 'c')
-allowReplay = input(false, title = 'Use fix values for replay mode', group = 'Replay mode (Approximate Method)', tooltip = 'Here we use constant values in order to provide the environment regardless of the date. See RSRATING ticker and report close values to have the last data.')
-first2 = input(195.93, title = 'For 99 stocks', group = 'Replay mode (Approximate Method)')
-scnd2 = input(117.11, title = 'For 90+ stocks', group = 'Replay mode (Approximate Method)')
-thrd2 = input(99.04, title = 'For 70+ stocks', group = 'Replay mode (Approximate Method)')
-frth2 = input(91.66, title = 'For 50+ stocks', group = 'Replay mode (Approximate Method)')
-ffth2 = input(80.96, title = 'For 30+ stocks', group = 'Replay mode (Approximate Method)')
-sxth2 = input(53.64, title = 'For 10+ stocks', group = 'Replay mode (Approximate Method)')
-svth2 = input(24.86, title = 'For 1- stocks', group = 'Replay mode (Approximate Method)')
+colorRS = input(color.rgb(0, 0, 255, 50), title = 'Color', group = '📶 RS Rating: Line', inline = 'a')
+lineTicker = input('SP:SPX', title = 'Comparative Symbol for Line', group = '📶 RS Rating: Shape & Offset', tooltip = 'Reference ticker used for calculation of the RS Line.')
+SpxValue = input(4200, title = 'Approximate Value of Comparative Symbol', group = '📶 RS Rating: Shape & Offset', tooltip = 'Used to gather a constant value')
+offset = input.int(80, minval = 0, maxval = 2000, title = 'Offset (%)', group = '📶 RS Rating: Shape & Offset', tooltip = 'Used to display the RS Line under the price.')
+plotNewHigh = input(true, title = 'Plot RS New Highs', group = '📶 RS Rating: New High/Low')
+rsNewHigh = input.string('RS New Highs', title = 'Type', options = ['RS New Highs', 'RS New Highs Before Price', 'Historical RS New Highs', 'Historical RS New Highs  Before Price'], group = '📶 RS Rating: New High/Low', inline = 'b')
+blueDotCol = input(color.rgb(121, 213, 242, 62), title = 'Color', group = '📶 RS Rating: New High/Low', inline = 'b')
+lookback = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = '📶 RS Rating: New High/Low', tooltip = 'The lookback for calculation of price and RS New Highs.', inline = 'b')
+sizeLabHigh = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = '📶 RS Rating: New High/Low')
+plotNewLow = input(false, title = 'Plot RS New Lows', group = '📶 RS Rating: New High/Low')
+rsNewLow = input.string('Historical RS New Lows', title = 'Type', options = ['RS New Lows', 'RS New Lows Before Price', 'Historical RS New Lows', 'Historical RS New Lows  Before Price'], group = '📶 RS Rating: New High/Low', inline = 'x')
+redDotCol = input(color.rgb(255, 82, 82, 62), title = 'Color', group = '📶 RS Rating: New High/Low', inline = 'x')
+lookback2 = input.int(250, title = 'Look-back', minval = 1, maxval = 252, group = '📶 RS Rating: New High/Low', tooltip = 'The lookback for calculation of price and RS New Lows.', inline = 'x')
+sizeLabLow = input.string('Tiny', title = 'Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = '📶 RS Rating: New High/Low')
+boolMa = input(false, title = 'Display MA 1 on RS Line', group = '📶 RS Rating: MA 1')
+lenMa = input(21, title = 'Lenght Da', group = '📶 RS Rating: MA 1', inline = 'c')
+colMa = input(color.orange, title = 'Color', group = '📶 RS Rating: MA 1', inline = 'c')
+typMa = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '📶 RS Rating: MA 1', inline = 'c')
+lenMaWe = input(10, title = 'Lenght We', group = '📶 RS Rating: MA 1', inline = 'c')
+typMaWe = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '📶 RS Rating: MA 1', inline = 'c')
+fillMa = input(false, title = 'Area Color', group = '📶 RS Rating: MA 1')
+posCol = input(color.rgb(0, 230, 119, 75), title = 'Positive Area', group = '📶 RS Rating: MA 1', inline = 'd')
+negCol = input(color.rgb(255, 82, 82, 75), title = 'Negative Area', group = '📶 RS Rating: MA 1', inline = 'd')
+boolMa2 = input(false, title = 'Display MA 2 on RS Line', group = '📶 RS Rating: MA 2')
+lenMa2 = input(50, title = 'Lenght Da', group = '📶 RS Rating: MA 2', inline = 'c')
+colMa2 = input(color.red, title = 'Color', group = '📶 RS Rating: MA 2', inline = 'c')
+typMa2 = input.string('EMA', title = 'Type Da', options = ['SMA', 'EMA'], group = '📶 RS Rating: MA 2', inline = 'c')
+lenMa2We = input(21, title = 'Lenght We', group = '📶 RS Rating: MA 2', inline = 'c')
+typMa2We = input.string('SMA', title = 'Type We', options = ['SMA', 'EMA'], group = '📶 RS Rating: MA 2', inline = 'c')
+allowReplay = input(false, title = 'Use fix values for replay mode', group = '📶 RS Rating: Replay Mode', tooltip = 'Here we use constant values in order to provide the environment regardless of the date. See RSRATING ticker and report close values to have the last data.')
+first2 = input(195.93, title = 'For 99 stocks', group = '📶 RS Rating: Replay Mode')
+scnd2 = input(117.11, title = 'For 90+ stocks', group = '📶 RS Rating: Replay Mode')
+thrd2 = input(99.04, title = 'For 70+ stocks', group = '📶 RS Rating: Replay Mode')
+frth2 = input(91.66, title = 'For 50+ stocks', group = '📶 RS Rating: Replay Mode')
+ffth2 = input(80.96, title = 'For 30+ stocks', group = '📶 RS Rating: Replay Mode')
+sxth2 = input(53.64, title = 'For 10+ stocks', group = '📶 RS Rating: Replay Mode')
+svth2 = input(24.86, title = 'For 1- stocks', group = '📶 RS Rating: Replay Mode')
 
 
 // Blue Dot
