@@ -17,6 +17,7 @@ indicator(title = 'Swing Dashboard', shorttitle = 'Swing Data', overlay = true)
 
 // ========== SIMPLIFIED VIEW ==========
 simplified_view = input.bool(false, title = 'Simplified View', group = '🔍 Simplified View', tooltip = 'When enabled, hides everything except the 5/10/20 EMA lines, the MA Structure band, and ADR%')
+simplified_view_floats = input.bool(false, title = 'Simplified View - Hide Floating Labels Only', group = '🔍 Simplified View', tooltip = 'When enabled, hides only the 3 right-sided floating labels: green EMA % label (incl. 20 EMA hourly), orange R1/Pivot/S1/S2 label, and blue multi-timeframe BB label. Everything else stays visible.')
 
 // ========== TOP TABLE: STYLE ==========
 tbl_size = input.string(size.normal, title = 'Table Size', options = [size.tiny, size.small, size.normal, size.large], group = '📊 Table: Style', tooltip = 'Size of the information table')
@@ -936,7 +937,7 @@ bb_values_text = '30M: ' + str.tostring(bb_lower_30m, '#.###') + ' / ' + str.tos
 var label bb_label = na
 if not na(bb_label)
     label.delete(bb_label)
-if not remove_floats and show_bb_label
+if not remove_floats and show_bb_label and not simplified_view_floats
     bb_label := label.new(bar_index + float_offset, low[1] - 2 * atr, bb_values_text, style = label.style_label_left, color = color.new(color.blue, 0), textcolor = color.white)
 
 // Additional Bollinger Band calculations removed to reduce request calls
@@ -970,7 +971,7 @@ bgcolor20 = percent_change_from_ema > 0 ? color.rgb(14, 61, 9, 4) : color.rgb(10
 var label ema_label = na
 if not na(ema_label)
     label.delete(ema_label)
-if not remove_floats and show_ema_label
+if not remove_floats and show_ema_label and not simplified_view_floats
     ema_label := label.new(bar_index + float_offset, low[1] + 2 * atr, ema_values_text, style = label.style_label_left, color = bgcolor20, textcolor = color.white)
 
 
@@ -1038,7 +1039,7 @@ pivot_values_text = 'R1: ' + str.tostring(r1, '#.###') + ' \Pivot: ' + str.tostr
 var label pivot_label = na
 if not na(pivot_label)
     label.delete(pivot_label)
-if not remove_floats and showLabels
+if not remove_floats and showLabels and not simplified_view_floats
     pivot_label := label.new(bar_index + float_offset, low[1] + 4 * atr, pivot_values_text, style = label.style_label_left, color = color.orange, textcolor = color.white)
 
 // Plot pivot levels
