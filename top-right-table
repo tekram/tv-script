@@ -29,7 +29,7 @@ show_empty_row = input(true, title = 'Add Empty Row Above Values', group = '📊
 show_adrp_raw = input(true, title = 'Show ADR%', group = '📊 Table: Market Data', tooltip = 'Displays Average Daily Range percentage in the main table')
 show_adrp = simplified_view ? true : show_adrp_raw
 adrp_len = input(20, title = 'ADR% Length', group = '📊 Table: Market Data', tooltip = 'Number of daily bars used in ADR% calculation')
-show_intraday_strength_raw = input.bool(true, title = 'Show Intraday Strength vs $SPY', group = '📊 Table: Market Data', tooltip = 'Compares the stock\'s current intraday directional move vs SPY, normalized to ATR')
+show_intraday_strength_raw = input.bool(true, title = 'Show Intraday Strength vs $SPY', group = '📊 Table: Market Data', tooltip = 'Stock session move (open to now) minus SPY session move, each in units of its own daily ATR. +1.0 = 1 ATR ahead of SPY, -1.0 = 1 ATR behind')
 show_intraday_strength = simplified_view ? false : show_intraday_strength_raw
 show_atr_raw = input(false, title = 'Show ATR', group = '📊 Table: Market Data', tooltip = 'Displays Average True Range in the main table')
 show_atr = simplified_view ? false : show_atr_raw
@@ -198,20 +198,18 @@ ma_structure_cloud_color = input.color(color.rgb(120, 123, 134, 64), title = 'Cl
 
 
 arp = 100 * (ta.sma(high / low, adrp_len) - 1)
-[adrp, atr, lod_dist] = request.security(syminfo.tickerid, 'D', [arp, ta.atr(atr_len), 100 * (close - low) / ta.atr(atr_len)])
+[adrp, atr, lod_dist, stock_d_open, stock_d_close] = request.security(syminfo.tickerid, 'D', [arp, ta.atr(atr_len), 100 * (close - low) / ta.atr(atr_len), open, close])
 
-// Intraday strength vs SPY (normalized to ATR)
-// This measures current directional move relative to SPY,
-// so values above 1.0 mean the symbol is moving more strongly than SPY per ATR unit.
-[spy_open, spy_close, spy_atr_current] = request.security('SPY', timeframe.period, [open, close, ta.atr(atr_len)], lookahead = barmerge.lookahead_off)
-stock_move = close - open
-spy_move = spy_close - spy_open
-stock_atr_norm = atr > 0 ? stock_move / atr : 0.0
-spy_atr_norm = spy_atr_current > 0 ? spy_move / spy_atr_current : 0.0
-intraday_strength_ratio = spy_atr_norm == 0 ? (stock_atr_norm > 0 ? 999.0 : 0.0) : stock_atr_norm / spy_atr_norm
-intraday_strength_label = intraday_strength_ratio > 1.5 ? 'Very Strong' : intraday_strength_ratio > 1.2 ? 'Strong' : intraday_strength_ratio > 0.9 ? 'In Line' : intraday_strength_ratio > 0.7 ? 'Soft' : 'Lagging'
-intraday_strength_text = intraday_strength_label + ' (' + str.tostring(math.round(intraday_strength_ratio, 2)) + 'x)'
-intraday_strength_color = intraday_strength_ratio > 1.5 ? color.rgb(18, 120, 18, 60) : intraday_strength_ratio > 1.2 ? color.rgb(64, 148, 64, 60) : intraday_strength_ratio > 0.9 ? color.rgb(120, 120, 120, 60) : intraday_strength_ratio > 0.7 ? color.rgb(160, 110, 60, 60) : color.rgb(160, 30, 30, 60)
+// Intraday strength vs SPY (normalized to daily ATR)
+// Session move (daily open -> current) of stock and SPY, each in units of its own daily ATR.
+// Difference keeps sign: +1.0 means stock is 1 ATR ahead of SPY today, -1.0 means 1 ATR behind.
+[spy_d_open, spy_d_close, spy_atr_d] = request.security('SPY', 'D', [open, close, ta.atr(atr_len)], lookahead = barmerge.lookahead_off)
+stock_atr_norm = atr > 0 ? (stock_d_close - stock_d_open) / atr : 0.0
+spy_atr_norm = spy_atr_d > 0 ? (spy_d_close - spy_d_open) / spy_atr_d : 0.0
+intraday_strength_diff = stock_atr_norm - spy_atr_norm
+intraday_strength_label = intraday_strength_diff > 1.0 ? 'Very Strong' : intraday_strength_diff > 0.3 ? 'Strong' : intraday_strength_diff >= -0.3 ? 'In Line' : intraday_strength_diff >= -1.0 ? 'Soft' : 'Lagging'
+intraday_strength_text = intraday_strength_label + ' (' + (intraday_strength_diff >= 0 ? '+' : '') + str.tostring(math.round(intraday_strength_diff, 2)) + ' ATR)'
+intraday_strength_color = intraday_strength_diff > 1.0 ? color.rgb(18, 120, 18, 60) : intraday_strength_diff > 0.3 ? color.rgb(64, 148, 64, 60) : intraday_strength_diff >= -0.3 ? color.rgb(120, 120, 120, 60) : intraday_strength_diff >= -1.0 ? color.rgb(160, 110, 60, 60) : color.rgb(160, 30, 30, 60)
 
 var float dailyHigh = na
 var float dailyLow = na
