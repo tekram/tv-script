@@ -90,8 +90,8 @@ simple_ema20_length = input.int(20, title = '20 EMA Length', group = '📈 5/10/
 // Market Breadth Items
 show_market_breadth_raw = input(false, title = 'Show Market Breadth Symbols', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Displays market breadth symbols (% above VWAP, TICK, etc.)')
 show_market_breadth = simplified_view ? false : show_market_breadth_raw
-symbolToPull = input.symbol('PCTABOVEVWAP.NY', title = '% Above VWAP Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % of stocks above VWAP')
-symbolToPull1 = input.symbol('TICK', title = 'TICK Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for TICK index')
+symbolToPull = input.symbol('USI:PCTABOVEVWAP.NY', title = '% Above VWAP Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % of stocks above VWAP')
+symbolToPull1 = input.symbol('USI:TICK', title = 'TICK Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for TICK index')
 symbolToPull2 = input.symbol('S5TW', title = '% Above 20 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 20-day SMA')
 symbolToPull3 = input.symbol('NDFD', title = '% Above 5 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 5-day SMA')
 symbolToPull4 = input.symbol('S5TH', title = '% Above 200 SMA Symbol', group = '📊 Bottom Table: Market Breadth Symbols', tooltip = 'Symbol for % above 200-day SMA')
@@ -565,10 +565,11 @@ rsi_tf = ta.rsi(close_tf, rsi_length)
 // Calculate VWAP
 vwap = ta.vwap(hlc3)
 
-// PCTABOVEVWAP and TICK — confirmed culprit, stubbed pending proper fix
+// PCTABOVEVWAP and TICK are intraday USI symbols — cap at 60-min for higher TF charts.
+// Exchange prefix (USI:) required; the bare symbols errored with "unsupported resolution".
 breadth_intraday_tf = timeframe.in_seconds() > 3600 ? '60' : timeframe.period
-percent_above_vwap = float(na)
-tick = float(na)
+percent_above_vwap = request.security(symbolToPull, breadth_intraday_tf, close)
+tick = request.security(symbolToPull1, breadth_intraday_tf, close)
 percent_above_20 = request.security(symbolToPull2, '1D', close)
 
 //5 DAY Breadth
