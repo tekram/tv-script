@@ -31,6 +31,8 @@ show_adrp = simplified_view ? true : show_adrp_raw
 adrp_len = input(20, title = 'ADR% Length', group = '📊 Table: Market Data', tooltip = 'Number of daily bars used in ADR% calculation')
 show_intraday_strength_raw = input.bool(true, title = 'Show Intraday Strength vs $SPY', group = '📊 Table: Market Data', tooltip = 'Stock day move (prior close to now, includes gap) minus SPY day move, each in units of its own prior-day ATR. +1.0 = 1 ATR ahead of SPY, -1.0 = 1 ATR behind')
 show_intraday_strength = simplified_view ? false : show_intraday_strength_raw
+show_vwap_raw = input.bool(true, title = 'Show Price vs VWAP', group = '📊 Table: Market Data', tooltip = 'Shows whether price is above or below the session VWAP, with % distance. Intraday timeframes only (VWAP resets every bar on D/W/M)')
+show_vwap = simplified_view ? false : show_vwap_raw
 show_atr_raw = input(false, title = 'Show ATR', group = '📊 Table: Market Data', tooltip = 'Displays Average True Range in the main table')
 show_atr = simplified_view ? false : show_atr_raw
 atr_len = input(14, title = 'ATR Length', group = '📊 Table: Market Data', tooltip = 'Number of daily bars used in ATR calculation')
@@ -693,7 +695,7 @@ if show_clouds
 
 // Display Table
 tfDaily = timeframe.isdaily
-table t = table.new(position.top_right, 3, 28, bgcolor = bg_col)
+table t = table.new(position.top_right, 3, 29, bgcolor = bg_col)
 if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
     if show_empty_row
         table.cell(t, 1, 0, '')
@@ -821,6 +823,12 @@ if barstate.islast and timeframe.period != 'W' and timeframe.period != 'M'
         table.cell(t, 2, 26, str.tostring(math.round(green_percentage, 1)) + '% / ' + str.tostring(math.round(red_percentage, 1)) + '%', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
         table.cell(t, 1, 27, 'Green/Red Volume (' + str.tostring(total_count) + ' bars)', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
         table.cell(t, 2, 27, str.tostring(math.round(green_volume_percentage, 1)) + '% / ' + str.tostring(math.round(red_volume_percentage, 1)) + '%', text_color = txt_col, text_size = tbl_size, bgcolor = volume_analysis_bgcolor)
+    if show_vwap and timeframe.isintraday
+        above_vwap = close > vwap
+        vwap_dist_pct = (close - vwap) / vwap * 100
+        vwap_bg = above_vwap ? #17880b51 : #880b0b50
+        table.cell(t, 1, 28, 'Price vs VWAP', text_color = txt_col, text_size = tbl_size, bgcolor = vwap_bg)
+        table.cell(t, 2, 28, (above_vwap ? 'Above' : 'Below') + ' (' + (vwap_dist_pct >= 0 ? '+' : '') + str.tostring(math.round(vwap_dist_pct, 2)) + '%) / ' + str.tostring(math.round(vwap, 2)), text_color = txt_col, text_size = tbl_size, bgcolor = vwap_bg)
         //table.merge_cells(t, 1, 18, 2, 18)
         //table.merge_cells(t, 1, 19, 2, 19)
 
